@@ -1,291 +1,292 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, fontSize, fontWeight, borderRadius, propertyStatus } from '@/lib/theme';
-import { Card } from '@/components/ui';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows, propertyStatus } from '@/lib/theme';
+import { Card, Badge, StatBlock } from '@/components/ui';
 
-type PropertyStatus = 'occupied' | 'vacancy' | 'turnover';
-
-interface Property {
-    id: string;
-    address: string;
-    city: string;
-    purchasePrice: number;
-    purchaseDate: string;
-    monthlyRent: number;
-    netRent: number;
-    status: PropertyStatus;
-    section8: boolean;
-    image?: string;
-}
-
-const properties: Property[] = [
+// Mock Data
+const PROPERTIES = [
     {
         id: '1',
-        address: '1234 Maple Street',
-        city: 'Detroit, MI',
-        purchasePrice: 95000,
-        purchaseDate: '2024-06-15',
-        monthlyRent: 1250,
-        netRent: 1050,
+        title: 'Modern Apartment in Miami',
+        location: 'Miami, FL',
         status: 'occupied',
-        section8: true,
+        purchasePrice: '$450,000',
+        monthlyRent: '$3,200',
+        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=60',
+        nextPaymentDate: '15 gün kaldı',
     },
     {
         id: '2',
-        address: '567 Oak Avenue',
-        city: 'Cleveland, OH',
-        purchasePrice: 110000,
-        purchaseDate: '2024-03-22',
-        monthlyRent: 1400,
-        netRent: 1180,
-        status: 'occupied',
-        section8: true,
-    },
-    {
-        id: '3',
-        address: '890 Pine Boulevard',
-        city: 'Memphis, TN',
-        purchasePrice: 120000,
-        purchaseDate: '2024-09-10',
-        monthlyRent: 1350,
-        netRent: 1100,
-        status: 'turnover',
-        section8: true,
+        title: 'Downtown Loft',
+        location: 'Austin, TX',
+        status: 'vacancy',
+        purchasePrice: '$320,000',
+        monthlyRent: '$2,100',
+        image: 'https://images.unsplash.com/photo-1512918760383-eda2723ad6e5?w=800&auto=format&fit=crop&q=60',
+        nextPaymentDate: '-',
     },
 ];
 
-const statusLabels: Record<PropertyStatus, string> = {
-    occupied: 'Kiracılı',
-    vacancy: 'Boş',
-    turnover: 'Geçiş',
-};
-
 export default function PropertiesScreen() {
-    const totalValue = properties.reduce((sum, p) => sum + p.purchasePrice, 0);
-    const totalMonthlyRent = properties.reduce((sum, p) => sum + p.netRent, 0);
+    const renderProperty = ({ item }: { item: any }) => (
+        <Card style={styles.propertyCard}>
+            <View style={styles.imageContainer}>
+                <Image source={{ uri: item.image }} style={styles.propertyImage} />
+                <View style={styles.statusBadgeContainer}>
+                    <Badge
+                        label={item.status === 'occupied' ? 'Kiracılı' : 'Boş'}
+                        color={propertyStatus[item.status as keyof typeof propertyStatus]}
+                    />
+                </View>
+                {/* Section 8 Badge Example */}
+                {item.status === 'occupied' && (
+                    <View style={styles.section8Badge}>
+                        <Text style={styles.section8Text}>Section 8</Text>
+                    </View>
+                )}
+            </View>
+
+            <View style={styles.cardContent}>
+                <View style={styles.headerRow}>
+                    <View>
+                        <Text style={styles.propertyTitle}>{item.title}</Text>
+                        <View style={styles.locationContainer}>
+                            <Ionicons name="location-sharp" size={14} color={colors.text.tertiary} />
+                            <Text style={styles.locationText}>{item.location}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Key Metrics Grid */}
+                <View style={styles.metricsGrid}>
+                    <StatBlock label="Mülk Değeri" value={item.purchasePrice} />
+                    <StatBlock label="Kira Geliri" value={item.monthlyRent} highlight />
+                    <StatBlock label="Net Getiri" value="~6.5%" />
+                </View>
+
+                {/* Action Footer */}
+                <View style={styles.cardFooter}>
+                    <View style={styles.nextPayment}>
+                        <Ionicons name="time-outline" size={16} color={colors.text.tertiary} />
+                        <Text style={styles.paymentText}>Ödeme: {item.nextPaymentDate}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.detailsButton}>
+                        <Text style={styles.detailsButtonText}>Detaylar</Text>
+                        <Ionicons name="arrow-forward" size={16} color={colors.text.primary} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Card>
+    );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header */}
+        <LinearGradient
+            colors={[colors.background.main, '#0F172A']}
+            style={styles.container}
+        >
+            <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Evlerim</Text>
-                    <Text style={styles.subtitle}>{properties.length} mülk</Text>
+                    <Text style={styles.title}>Mülklerim</Text>
+                    <TouchableOpacity style={styles.addButton}>
+                        <Ionicons name="add" size={24} color={colors.text.primary} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Summary Cards */}
-                <View style={styles.summaryRow}>
-                    <Card style={styles.summaryCard}>
-                        <Ionicons name="business-outline" size={20} color={colors.accent[500]} />
-                        <Text style={styles.summaryValue}>${totalValue.toLocaleString()}</Text>
-                        <Text style={styles.summaryLabel}>Toplam Değer</Text>
-                    </Card>
-                    <Card style={styles.summaryCard}>
-                        <Ionicons name="wallet-outline" size={20} color={colors.success[500]} />
-                        <Text style={styles.summaryValue}>${totalMonthlyRent.toLocaleString()}</Text>
-                        <Text style={styles.summaryLabel}>Aylık Net</Text>
-                    </Card>
+                <View style={styles.summaryContainer}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.summaryScroll}>
+                        <Card style={styles.summaryCard}>
+                            <Ionicons name="business" size={24} color={colors.accent.cyan} style={styles.summaryIcon} />
+                            <Text style={styles.summaryValue}>3</Text>
+                            <Text style={styles.summaryLabel}>Toplam Mülk</Text>
+                        </Card>
+                        <Card style={styles.summaryCard}>
+                            <Ionicons name="cash" size={24} color={colors.success} style={styles.summaryIcon} />
+                            <Text style={styles.summaryValue}>$89k</Text>
+                            <Text style={styles.summaryLabel}>Yıllık Gelir</Text>
+                        </Card>
+                        <Card style={styles.summaryCard}>
+                            <Ionicons name="trending-up" size={24} color={colors.accent.purple} style={styles.summaryIcon} />
+                            <Text style={styles.summaryValue}>%12</Text>
+                            <Text style={styles.summaryLabel}>Değer Artışı</Text>
+                        </Card>
+                    </ScrollView>
                 </View>
 
-                {/* Property List */}
-                <View style={styles.listSection}>
-                    {properties.map((property) => (
-                        <TouchableOpacity key={property.id} activeOpacity={0.7}>
-                            <Card style={styles.propertyCard}>
-                                {/* Property Image Placeholder */}
-                                <View style={styles.propertyImage}>
-                                    <Ionicons name="home" size={32} color={colors.text.muted} />
-                                </View>
-
-                                {/* Property Info */}
-                                <View style={styles.propertyInfo}>
-                                    <View style={styles.propertyHeader}>
-                                        <Text style={styles.propertyAddress}>{property.address}</Text>
-                                        <View style={[styles.statusBadge, { backgroundColor: `${propertyStatus[property.status]}20` }]}>
-                                            <View style={[styles.statusDot, { backgroundColor: propertyStatus[property.status] }]} />
-                                            <Text style={[styles.statusText, { color: propertyStatus[property.status] }]}>
-                                                {statusLabels[property.status]}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={styles.propertyLocation}>
-                                        <Ionicons name="location-outline" size={14} color={colors.text.muted} />
-                                        <Text style={styles.cityText}>{property.city}</Text>
-                                        {property.section8 && (
-                                            <View style={styles.section8Badge}>
-                                                <Ionicons name="shield-checkmark" size={12} color={colors.success[500]} />
-                                                <Text style={styles.section8Text}>Section 8</Text>
-                                            </View>
-                                        )}
-                                    </View>
-
-                                    <View style={styles.propertyStats}>
-                                        <View style={styles.statBlock}>
-                                            <Text style={styles.statBlockLabel}>Alış Fiyatı</Text>
-                                            <Text style={styles.statBlockValue}>${property.purchasePrice.toLocaleString()}</Text>
-                                        </View>
-                                        <View style={styles.statBlock}>
-                                            <Text style={styles.statBlockLabel}>Aylık Kira</Text>
-                                            <Text style={styles.statBlockValue}>${property.monthlyRent.toLocaleString()}</Text>
-                                        </View>
-                                        <View style={styles.statBlock}>
-                                            <Text style={styles.statBlockLabel}>Net Gelir</Text>
-                                            <Text style={[styles.statBlockValue, { color: colors.success[500] }]}>
-                                                ${property.netRent.toLocaleString()}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </View>
-
-                                {/* Arrow */}
-                                <View style={styles.arrowContainer}>
-                                    <Ionicons name="chevron-forward" size={20} color={colors.text.muted} />
-                                </View>
-                            </Card>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+                <FlatList
+                    data={PROPERTIES}
+                    renderItem={renderProperty}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.primary[900],
+    },
+    safeArea: {
+        flex: 1,
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: spacing.xl,
-        paddingTop: spacing.lg,
-        paddingBottom: spacing.lg,
+        paddingVertical: spacing.lg,
     },
     title: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.display,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        letterSpacing: -1,
     },
-    subtitle: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
+    addButton: {
+        width: 44,
+        height: 44,
+        borderRadius: borderRadius.full,
+        backgroundColor: colors.primary[600],
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...shadows.glow,
     },
-    summaryRow: {
-        flexDirection: 'row',
+    summaryContainer: {
+        marginBottom: spacing.lg,
+    },
+    summaryScroll: {
         paddingHorizontal: spacing.xl,
         gap: spacing.md,
-        marginBottom: spacing.xxl,
     },
     summaryCard: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: spacing.xl,
+        minWidth: 120,
+        padding: spacing.lg,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+    },
+    summaryIcon: {
+        marginBottom: spacing.md,
     },
     summaryValue: {
-        fontSize: fontSize.xl,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.xxl,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
-        marginTop: spacing.sm,
+        marginBottom: 2,
     },
     summaryLabel: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
+        color: colors.text.secondary,
     },
-    listSection: {
+    listContent: {
         paddingHorizontal: spacing.xl,
-        gap: spacing.md,
-        paddingBottom: spacing.xxxl,
+        paddingBottom: 100,
+        gap: spacing.lg,
     },
     propertyCard: {
-        flexDirection: 'row',
         padding: 0,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
         overflow: 'hidden',
+        ...shadows.card,
+    },
+    imageContainer: {
+        height: 180,
+        backgroundColor: colors.background.subtle,
+        position: 'relative',
     },
     propertyImage: {
-        width: 80,
-        backgroundColor: colors.primary[800],
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
     },
-    propertyInfo: {
-        flex: 1,
+    statusBadgeContainer: {
+        position: 'absolute',
+        top: spacing.md,
+        right: spacing.md,
+    },
+    section8Badge: {
+        position: 'absolute',
+        top: spacing.md,
+        left: spacing.md,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: borderRadius.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    section8Text: {
+        color: colors.text.primary,
+        fontSize: fontSize.xs,
+        fontWeight: fontWeight.bold as any,
+    },
+    cardContent: {
         padding: spacing.lg,
     },
-    propertyHeader: {
+    headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: spacing.sm,
+        marginBottom: spacing.lg,
     },
-    propertyAddress: {
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.semibold,
+    propertyTitle: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
-        flex: 1,
+        marginBottom: 4,
     },
-    statusBadge: {
+    locationContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.sm,
+        gap: 4,
+    },
+    locationText: {
+        fontSize: fontSize.sm,
+        color: colors.text.tertiary,
+    },
+    metricsGrid: {
+        flexDirection: 'row',
+        gap: spacing.md,
+        marginBottom: spacing.lg,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        padding: spacing.md,
+        borderRadius: borderRadius.lg,
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: colors.border.subtle,
+    },
+    nextPayment: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    paymentText: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+    },
+    detailsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
         paddingVertical: spacing.xs,
+        paddingHorizontal: spacing.md,
+        backgroundColor: colors.primary[600],
         borderRadius: borderRadius.full,
-        marginLeft: spacing.sm,
     },
-    statusDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        marginRight: spacing.xs,
-    },
-    statusText: {
-        fontSize: fontSize.xs,
-        fontWeight: fontWeight.semibold,
-    },
-    propertyLocation: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    cityText: {
+    detailsButtonText: {
         fontSize: fontSize.sm,
-        color: colors.text.muted,
-        marginLeft: spacing.xs,
-    },
-    section8Badge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginLeft: spacing.md,
-        paddingHorizontal: spacing.sm,
-        paddingVertical: 2,
-        backgroundColor: `${colors.success[500]}15`,
-        borderRadius: borderRadius.sm,
-    },
-    section8Text: {
-        fontSize: fontSize.xs,
-        color: colors.success[500],
-        fontWeight: fontWeight.semibold,
-        marginLeft: 3,
-    },
-    propertyStats: {
-        flexDirection: 'row',
-        gap: spacing.lg,
-    },
-    statBlock: {},
-    statBlockLabel: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginBottom: 2,
-    },
-    statBlockValue: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.bold,
+        fontWeight: fontWeight.semibold as any,
         color: colors.text.primary,
-    },
-    arrowContainer: {
-        justifyContent: 'center',
-        paddingRight: spacing.md,
     },
 });

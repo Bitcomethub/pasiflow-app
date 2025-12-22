@@ -1,364 +1,256 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { colors, spacing, fontSize, fontWeight, borderRadius, rentStatus } from '@/lib/theme';
-import { Card } from '@/components/ui';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
+import { Card } from '@/components/ui/Card';
 
-type RentStatusType = 'expected' | 'received' | 'late';
+// Temporary local status mapping
+const statusColors = {
+    paid: colors.success,
+    late: colors.error,
+    pending: colors.warning,
+};
 
-interface RentPayment {
-    id: string;
-    propertyAddress: string;
-    propertyCity: string;
-    amount: number;
-    dueDate: string;
-    paidDate?: string;
-    status: RentStatusType;
-}
-
-const rentPayments: RentPayment[] = [
-    {
-        id: '1',
-        propertyAddress: '1234 Maple Street',
-        propertyCity: 'Detroit, MI',
-        amount: 1250,
-        dueDate: '2024-12-01',
-        paidDate: '2024-12-03',
-        status: 'received',
-    },
-    {
-        id: '2',
-        propertyAddress: '567 Oak Avenue',
-        propertyCity: 'Cleveland, OH',
-        amount: 1400,
-        dueDate: '2024-12-01',
-        paidDate: '2024-12-02',
-        status: 'received',
-    },
-    {
-        id: '3',
-        propertyAddress: '890 Pine Boulevard',
-        propertyCity: 'Memphis, TN',
-        amount: 1350,
-        dueDate: '2024-12-01',
-        status: 'expected',
-    },
+const RENT_PAYMENTS = [
+    { id: '1', property: 'Miami Apt #4B', amount: '$3,200', date: '01 Oca 2026', status: 'pending', tenant: 'John Doe' },
+    { id: '2', property: 'Austin Loft', amount: '$2,100', date: '28 Ara 2025', status: 'paid', tenant: 'Sarah Smith' },
+    { id: '3', property: 'Detroit House', amount: '$1,450', date: '05 Ara 2025', status: 'late', tenant: 'Mike Johnson' },
 ];
 
-const statusLabels: Record<RentStatusType, string> = {
-    expected: 'Bekleniyor',
-    received: 'Ödendi',
-    late: 'Gecikmiş',
-};
-
-const statusIcons: Record<RentStatusType, string> = {
-    expected: 'time-outline',
-    received: 'checkmark-circle',
-    late: 'alert-circle',
-};
-
 export default function RentScreen() {
-    const totalExpected = rentPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalReceived = rentPayments
-        .filter((p) => p.status === 'received')
-        .reduce((sum, p) => sum + p.amount, 0);
-
-    const handlePress = () => {
-        if (Platform.OS === 'ios') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-    };
+    const renderPaymentItem = ({ item }: { item: any }) => (
+        <View style={styles.paymentItem}>
+            <View style={styles.paymentIconContainer}>
+                <Ionicons
+                    name={item.status === 'paid' ? "checkmark-circle" : "time"}
+                    size={24}
+                    color={statusColors[item.status as keyof typeof statusColors]}
+                />
+            </View>
+            <View style={styles.paymentDetails}>
+                <Text style={styles.paymentProperty}>{item.property}</Text>
+                <Text style={styles.paymentTenant}>{item.tenant}</Text>
+            </View>
+            <View style={styles.paymentRight}>
+                <Text style={styles.paymentAmount}>{item.amount}</Text>
+                <Text style={[styles.paymentStatus, { color: statusColors[item.status as keyof typeof statusColors] }]}>
+                    {item.status === 'paid' ? 'Ödendi' : item.status === 'late' ? 'Gecikmiş' : 'Bekleniyor'}
+                </Text>
+            </View>
+        </View>
+    );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header */}
+        <LinearGradient
+            colors={[colors.background.main, '#0F172A']}
+            style={styles.container}
+        >
+            <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
                     <Text style={styles.title}>Kira Takibi</Text>
-                    <Text style={styles.subtitle}>Aralık 2024</Text>
+                    <TouchableOpacity style={styles.historyButton}>
+                        <Ionicons name="calendar-outline" size={20} color={colors.text.primary} />
+                    </TouchableOpacity>
                 </View>
 
-                {/* Monthly Summary */}
-                <Card variant="accent" style={styles.summaryCard}>
-                    <View style={styles.summaryRow}>
-                        <View style={styles.summaryItem}>
-                            <Text style={styles.summaryLabel}>Beklenen Toplam</Text>
-                            <Text style={styles.summaryValue}>${totalExpected.toLocaleString()}</Text>
-                        </View>
-                        <View style={styles.summaryDivider} />
-                        <View style={styles.summaryItem}>
-                            <Text style={styles.summaryLabel}>Alınan</Text>
-                            <Text style={[styles.summaryValue, { color: colors.success[500] }]}>
-                                ${totalReceived.toLocaleString()}
-                            </Text>
-                        </View>
+                {/* Summary Card with Progress Circle Concept */}
+                <Card style={styles.summaryCard}>
+                    <View style={styles.summaryHeader}>
+                        <Text style={styles.summaryTitle}>Ocak 2026</Text>
+                        <Text style={styles.collectionRate}>Toplanan: %66</Text>
                     </View>
 
-                    {/* Progress Bar */}
-                    <View style={styles.progressContainer}>
-                        <View style={styles.progressBar}>
-                            <View
-                                style={[
-                                    styles.progressFill,
-                                    { width: `${(totalReceived / totalExpected) * 100}%` },
-                                ]}
-                            />
+                    <View style={styles.progressBarBg}>
+                        <View style={[styles.progressBarFill, { width: '66%' }]} />
+                    </View>
+
+                    <View style={styles.summaryStats}>
+                        <View>
+                            <Text style={styles.statLabel}>Beklenen</Text>
+                            <Text style={styles.statValue}>$6,750</Text>
                         </View>
-                        <Text style={styles.progressText}>
-                            {Math.round((totalReceived / totalExpected) * 100)}% tahsil edildi
-                        </Text>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={styles.statLabel}>Toplanan</Text>
+                            <Text style={[styles.statValue, { color: colors.success }]}>$4,455</Text>
+                        </View>
                     </View>
                 </Card>
 
-                {/* Payment Window Notice */}
-                <View style={styles.noticeContainer}>
-                    <View style={styles.noticeIcon}>
-                        <Ionicons name="calendar-outline" size={18} color={colors.accent[500]} />
-                    </View>
-                    <Text style={styles.noticeText}>
-                        Ödeme penceresi: Her ayın <Text style={styles.noticeHighlight}>1-5'i</Text> arası
+                {/* Status Notice */}
+                <View style={[styles.noticeContainer, { backgroundColor: `${colors.accent.purple}15` }]}>
+                    <Ionicons name="information-circle" size={20} color={colors.accent.purple} />
+                    <Text style={[styles.noticeText, { color: colors.accent.purple }]}>
+                        Ödemeler her ayın 1'i ile 5'i arasında toplanır ve hesabınıza aktarılır.
                     </Text>
                 </View>
 
-                {/* Rent List */}
-                <View style={styles.listSection}>
-                    <Text style={styles.sectionTitle}>Bu Ayki Ödemeler</Text>
-
-                    {rentPayments.map((payment) => (
-                        <TouchableOpacity
-                            key={payment.id}
-                            activeOpacity={0.7}
-                            onPress={handlePress}
-                        >
-                            <Card style={styles.paymentCard}>
-                                <View style={styles.paymentHeader}>
-                                    <View style={styles.paymentInfo}>
-                                        <Text style={styles.paymentAddress}>{payment.propertyAddress}</Text>
-                                        <View style={styles.paymentLocation}>
-                                            <Ionicons name="location-outline" size={12} color={colors.text.muted} />
-                                            <Text style={styles.paymentCity}>{payment.propertyCity}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.paymentAmount}>
-                                        <Text style={styles.amountValue}>${payment.amount.toLocaleString()}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.paymentFooter}>
-                                    <View style={[styles.statusBadge, { backgroundColor: `${rentStatus[payment.status]}15` }]}>
-                                        <Ionicons
-                                            name={statusIcons[payment.status] as any}
-                                            size={14}
-                                            color={rentStatus[payment.status]}
-                                        />
-                                        <Text style={[styles.statusText, { color: rentStatus[payment.status] }]}>
-                                            {statusLabels[payment.status]}
-                                        </Text>
-                                    </View>
-
-                                    {payment.paidDate && (
-                                        <Text style={styles.paidDate}>
-                                            Ödendi: {new Date(payment.paidDate).toLocaleDateString('tr-TR')}
-                                        </Text>
-                                    )}
-                                </View>
-                            </Card>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {/* Rent History Link */}
-                <TouchableOpacity
-                    style={styles.historyButton}
-                    onPress={handlePress}
-                >
-                    <Ionicons name="time-outline" size={20} color={colors.accent[500]} />
-                    <Text style={styles.historyButtonText}>Geçmiş Ödemeleri Gör</Text>
-                    <Ionicons name="chevron-forward" size={18} color={colors.text.muted} />
-                </TouchableOpacity>
-            </ScrollView>
-        </SafeAreaView>
+                {/* Payments List */}
+                <Text style={styles.sectionTitle}>Hareketler</Text>
+                <Card style={styles.listCard}>
+                    <FlatList
+                        data={RENT_PAYMENTS}
+                        renderItem={renderPaymentItem}
+                        keyExtractor={item => item.id}
+                        scrollEnabled={false}
+                        ItemSeparatorComponent={() => <View style={styles.separator} />}
+                    />
+                </Card>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.primary[900],
+    },
+    safeArea: {
+        flex: 1,
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: spacing.xl,
-        paddingTop: spacing.lg,
-        paddingBottom: spacing.lg,
+        paddingVertical: spacing.lg,
     },
     title: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.display,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        letterSpacing: -1,
     },
-    subtitle: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
+    historyButton: {
+        width: 40,
+        height: 40,
+        borderRadius: borderRadius.full,
+        backgroundColor: colors.background.subtle,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
     },
     summaryCard: {
         marginHorizontal: spacing.xl,
+        padding: spacing.xl,
         marginBottom: spacing.lg,
+        backgroundColor: colors.primary[900],
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        ...shadows.glow,
     },
-    summaryRow: {
+    summaryHeader: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: spacing.lg,
     },
-    summaryItem: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    summaryDivider: {
-        width: 1,
-        backgroundColor: colors.border.default,
-    },
-    summaryLabel: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        marginBottom: spacing.xs,
-    },
-    summaryValue: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
+    summaryTitle: {
+        fontSize: fontSize.xl,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
     },
-    progressContainer: {
-        borderTopWidth: 1,
-        borderTopColor: colors.border.default,
-        paddingTop: spacing.lg,
+    collectionRate: {
+        fontSize: fontSize.sm,
+        color: colors.success,
+        fontWeight: fontWeight.bold as any,
     },
-    progressBar: {
+    progressBarBg: {
         height: 8,
-        backgroundColor: colors.primary[800],
-        borderRadius: borderRadius.full,
+        backgroundColor: colors.background.subtle,
+        borderRadius: 4,
+        marginBottom: spacing.lg,
         overflow: 'hidden',
-        marginBottom: spacing.sm,
     },
-    progressFill: {
+    progressBarFill: {
         height: '100%',
-        backgroundColor: colors.success[500],
-        borderRadius: borderRadius.full,
+        backgroundColor: colors.success,
+        borderRadius: 4,
     },
-    progressText: {
+    summaryStats: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    statLabel: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
-        textAlign: 'center',
+        color: colors.text.tertiary,
+        marginBottom: 4,
+    },
+    statValue: {
+        fontSize: fontSize.xxl,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
     },
     noticeContainer: {
+        marginHorizontal: spacing.xl,
+        marginBottom: spacing.xl,
+        padding: spacing.md,
+        borderRadius: borderRadius.lg,
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: spacing.xl,
-        marginBottom: spacing.xxl,
-        padding: spacing.md,
-        backgroundColor: `${colors.accent[500]}10`,
-        borderRadius: borderRadius.lg,
+        gap: spacing.md,
         borderWidth: 1,
-        borderColor: `${colors.accent[500]}20`,
-    },
-    noticeIcon: {
-        marginRight: spacing.md,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     noticeText: {
-        fontSize: fontSize.sm,
-        color: colors.text.secondary,
-    },
-    noticeHighlight: {
-        fontWeight: fontWeight.bold,
-        color: colors.accent[500],
-    },
-    listSection: {
-        paddingHorizontal: spacing.xl,
+        flex: 1,
+        fontSize: fontSize.xs,
+        lineHeight: 18,
     },
     sectionTitle: {
-        fontSize: fontSize.md,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
-        marginBottom: spacing.lg,
-    },
-    paymentCard: {
+        marginLeft: spacing.xl,
         marginBottom: spacing.md,
     },
-    paymentHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: spacing.md,
+    listCard: {
+        marginHorizontal: spacing.xl,
+        padding: 0,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
     },
-    paymentInfo: {
-        flex: 1,
-    },
-    paymentAddress: {
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.semibold,
-        color: colors.text.primary,
-        marginBottom: spacing.xs,
-    },
-    paymentLocation: {
+    paymentItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        padding: spacing.md,
     },
-    paymentCity: {
+    paymentIconContainer: {
+        width: 40,
+        alignItems: 'center',
+    },
+    paymentDetails: {
+        flex: 1,
+        marginLeft: spacing.sm,
+    },
+    paymentProperty: {
+        fontSize: fontSize.base,
+        fontWeight: fontWeight.medium as any,
+        color: colors.text.primary,
+        marginBottom: 2,
+    },
+    paymentTenant: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginLeft: spacing.xs,
+        color: colors.text.secondary,
     },
-    paymentAmount: {
+    paymentRight: {
         alignItems: 'flex-end',
     },
-    amountValue: {
-        fontSize: fontSize.xl,
-        fontWeight: fontWeight.bold,
+    paymentAmount: {
+        fontSize: fontSize.base,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        marginBottom: 2,
     },
-    paymentFooter: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderTopWidth: 1,
-        borderTopColor: colors.border.default,
-        paddingTop: spacing.md,
-    },
-    statusBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
-        borderRadius: borderRadius.full,
-    },
-    statusText: {
+    paymentStatus: {
         fontSize: fontSize.xs,
-        fontWeight: fontWeight.semibold,
-        marginLeft: spacing.xs,
+        fontWeight: fontWeight.medium as any,
     },
-    paidDate: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-    },
-    historyButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginHorizontal: spacing.xl,
-        marginTop: spacing.lg,
-        marginBottom: spacing.xxxl,
-        paddingVertical: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.border.default,
-        borderRadius: borderRadius.lg,
-        gap: spacing.sm,
-    },
-    historyButtonText: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold,
-        color: colors.accent[500],
-        flex: 1,
+    separator: {
+        height: 1,
+        backgroundColor: colors.border.subtle,
+        marginLeft: spacing.xl + 40, // Indent past icon
     },
 });

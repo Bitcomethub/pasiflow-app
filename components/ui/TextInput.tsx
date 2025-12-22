@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/lib/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight, shadows } from '@/lib/theme';
 
 interface TextInputProps extends RNTextInputProps {
     label?: string;
@@ -48,14 +48,14 @@ export function TextInput({
                     <Ionicons
                         name={icon}
                         size={20}
-                        color={isFocused ? colors.accent[500] : colors.text.muted}
+                        color={isFocused ? colors.primary[500] : colors.text.tertiary}
                         style={styles.leftIcon}
                     />
                 )}
 
                 <RNTextInput
                     style={[styles.input, style]}
-                    placeholderTextColor={colors.text.muted}
+                    placeholderTextColor={colors.text.tertiary}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     secureTextEntry={isPassword && !isPasswordVisible}
@@ -70,7 +70,7 @@ export function TextInput({
                         <Ionicons
                             name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
                             size={20}
-                            color={colors.text.muted}
+                            color={colors.text.tertiary}
                         />
                     </TouchableOpacity>
                 )}
@@ -84,7 +84,7 @@ export function TextInput({
                         <Ionicons
                             name={rightIcon}
                             size={20}
-                            color={colors.text.muted}
+                            color={colors.text.tertiary}
                         />
                     </TouchableOpacity>
                 )}
@@ -102,24 +102,26 @@ const styles = StyleSheet.create({
     label: {
         color: colors.text.primary,
         fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold,
+        fontWeight: fontWeight.semibold as any,
         marginBottom: spacing.sm,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.primary[800],
+        backgroundColor: colors.background.subtle, // Light Gray
         borderRadius: borderRadius.lg,
         borderWidth: 1,
-        borderColor: colors.border.default,
+        borderColor: 'transparent', // No border by default
         paddingHorizontal: spacing.lg,
     },
     inputContainerFocused: {
-        borderColor: colors.accent[500],
-        backgroundColor: colors.primary[900],
+        backgroundColor: colors.background.card, // White on focus
+        borderColor: colors.primary[500], // Blue border
+        ...shadows.sm,
     },
     inputContainerError: {
-        borderColor: colors.error[500],
+        borderColor: colors.error,
+        backgroundColor: '#FEF2F2', // Light red bg
     },
     leftIcon: {
         marginRight: spacing.md,
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
         marginLeft: spacing.sm,
     },
     error: {
-        color: colors.error[500],
+        color: colors.error,
         fontSize: fontSize.xs,
         marginTop: spacing.xs,
         marginLeft: spacing.xs,

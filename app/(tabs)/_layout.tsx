@@ -1,25 +1,28 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/lib/theme';
+import { View, Platform } from 'react-native';
+import { colors, shadows, borderRadius } from '@/lib/theme';
 
 export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: colors.accent[500],
-                tabBarInactiveTintColor: colors.text.muted,
+                tabBarShowLabel: false,
+                tabBarActiveTintColor: colors.primary[600],
+                tabBarInactiveTintColor: colors.text.tertiary,
                 tabBarStyle: {
-                    backgroundColor: colors.primary[900],
-                    borderTopColor: colors.border.default,
-                    borderTopWidth: 1,
-                    height: 85,
-                    paddingBottom: 20,
-                    paddingTop: 10,
-                },
-                tabBarLabelStyle: {
-                    fontSize: 11,
-                    fontWeight: '600',
+                    position: 'absolute',
+                    bottom: 25,
+                    left: 20,
+                    right: 20,
+                    backgroundColor: colors.background.glass, // Use new glass token
+                    borderRadius: borderRadius.xxl,
+                    height: 70,
+                    borderTopWidth: 0,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.1)', // Glass border
+                    ...shadows.float,
                 },
             }}
         >
@@ -27,8 +30,15 @@ export default function TabLayout() {
                 name="index"
                 options={{
                     title: 'Dashboard',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="grid-outline" size={size} color={color} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            top: Platform.OS === 'ios' ? 10 : 0
+                        }}>
+                            <Ionicons name={focused ? "grid" : "grid-outline"} size={28} color={color} />
+                            {focused && <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 4 }} />}
+                        </View>
                     ),
                 }}
             />
@@ -36,8 +46,15 @@ export default function TabLayout() {
                 name="properties"
                 options={{
                     title: 'Evlerim',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="home-outline" size={size} color={color} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            top: Platform.OS === 'ios' ? 10 : 0
+                        }}>
+                            <Ionicons name={focused ? "home" : "home-outline"} size={28} color={color} />
+                            {focused && <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 4 }} />}
+                        </View>
                     ),
                 }}
             />
@@ -45,17 +62,15 @@ export default function TabLayout() {
                 name="rent"
                 options={{
                     title: 'Kira',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="wallet-outline" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="documents"
-                options={{
-                    title: 'Dokümanlar',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="folder-outline" size={size} color={color} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            top: Platform.OS === 'ios' ? 10 : 0
+                        }}>
+                            <Ionicons name={focused ? "wallet" : "wallet-outline"} size={28} color={color} />
+                            {focused && <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 4 }} />}
+                        </View>
                     ),
                 }}
             />
@@ -63,8 +78,31 @@ export default function TabLayout() {
                 name="simulator"
                 options={{
                     title: 'Simülasyon',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="calculator-outline" size={size} color={color} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            top: Platform.OS === 'ios' ? 10 : 0
+                        }}>
+                            <Ionicons name={focused ? "calculator" : "calculator-outline"} size={28} color={color} />
+                            {focused && <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 4 }} />}
+                        </View>
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="documents"
+                options={{
+                    title: 'Dokümanlar',
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            top: Platform.OS === 'ios' ? 10 : 0
+                        }}>
+                            <Ionicons name={focused ? "folder" : "folder-outline"} size={28} color={color} />
+                            {focused && <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 4 }} />}
+                        </View>
                     ),
                 }}
             />

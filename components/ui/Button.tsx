@@ -6,7 +6,9 @@ import {
     ActivityIndicator,
     ViewStyle,
     TextStyle,
+    Platform,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { colors, borderRadius, fontSize, fontWeight, shadows } from '@/lib/theme';
 
 interface ButtonProps {
@@ -18,6 +20,7 @@ interface ButtonProps {
     disabled?: boolean;
     icon?: React.ReactNode;
     style?: ViewStyle;
+    textStyle?: TextStyle;
 }
 
 export function Button({
@@ -29,12 +32,20 @@ export function Button({
     disabled = false,
     icon,
     style,
+    textStyle,
 }: ButtonProps) {
     const isDisabled = disabled || loading;
 
+    const handlePress = () => {
+        if (Platform.OS === 'ios') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        onPress();
+    };
+
     return (
         <TouchableOpacity
-            onPress={onPress}
+            onPress={handlePress}
             disabled={isDisabled}
             activeOpacity={0.8}
             style={[
@@ -42,13 +53,13 @@ export function Button({
                 styles[variant],
                 styles[`${size}Size`],
                 isDisabled && styles.disabled,
-                variant === 'primary' && shadows.accent,
+                variant === 'primary' && shadows.float,
                 style,
             ]}
         >
             {loading ? (
                 <ActivityIndicator
-                    color={variant === 'primary' ? colors.white : colors.accent[500]}
+                    color={variant === 'primary' ? colors.text.inverse : colors.primary[600]}
                     size="small"
                 />
             ) : (
@@ -59,7 +70,8 @@ export function Button({
                             styles.text,
                             styles[`${variant}Text`],
                             styles[`${size}Text`],
-                            icon && { marginLeft: 8 },
+                            icon ? { marginLeft: 8 } : undefined,
+                            textStyle,
                         ]}
                     >
                         {title}
@@ -78,17 +90,18 @@ const styles = StyleSheet.create({
         borderRadius: borderRadius.full,
     },
 
-    // Variants
+    // Variants - COSMIC THEME
     primary: {
-        backgroundColor: colors.accent[500],
+        backgroundColor: colors.accent.gradientStart,
+        ...shadows.float,
     },
     secondary: {
-        backgroundColor: colors.primary[700],
+        backgroundColor: colors.background.subtle,
     },
     outline: {
         backgroundColor: 'transparent',
         borderWidth: 2,
-        borderColor: colors.accent[500],
+        borderColor: colors.primary[600],
     },
     ghost: {
         backgroundColor: 'transparent',
@@ -96,33 +109,33 @@ const styles = StyleSheet.create({
 
     // Sizes
     smSize: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
     },
     mdSize: {
-        paddingVertical: 14,
-        paddingHorizontal: 24,
+        paddingVertical: 16,
+        paddingHorizontal: 32,
     },
     lgSize: {
-        paddingVertical: 18,
-        paddingHorizontal: 32,
+        paddingVertical: 20,
+        paddingHorizontal: 40,
     },
 
     // Text
     text: {
-        fontWeight: fontWeight.bold,
+        fontWeight: fontWeight.bold as any,
     },
     primaryText: {
-        color: colors.white,
+        color: colors.text.primary,
     },
     secondaryText: {
-        color: colors.white,
+        color: colors.accent.cyan,
     },
     outlineText: {
-        color: colors.accent[500],
+        color: colors.primary[600],
     },
     ghostText: {
-        color: colors.accent[500],
+        color: colors.primary[600],
     },
 
     // Text sizes
@@ -133,10 +146,11 @@ const styles = StyleSheet.create({
         fontSize: fontSize.base,
     },
     lgText: {
-        fontSize: fontSize.md,
+        fontSize: fontSize.lg,
     },
 
     disabled: {
         opacity: 0.5,
+        shadowOpacity: 0,
     },
 });

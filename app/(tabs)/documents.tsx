@@ -1,286 +1,166 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import * as Haptics from 'expo-haptics';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/lib/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Card } from '@/components/ui';
 
-interface DocumentCategory {
-    id: string;
-    name: string;
-    icon: string;
-    count: number;
-    description: string;
-}
-
-interface PropertyDocs {
-    id: string;
-    address: string;
-    city: string;
-    categories: DocumentCategory[];
-}
-
-const propertyDocuments: PropertyDocs[] = [
-    {
-        id: '1',
-        address: '1234 Maple Street',
-        city: 'Detroit, MI',
-        categories: [
-            { id: 'closing', name: 'Closing / HUD', icon: 'document-text', count: 3, description: 'Satış dokümanları' },
-            { id: 'lease', name: 'Lease', icon: 'clipboard', count: 1, description: 'Kira sözleşmesi' },
-            { id: 'inspection', name: 'Inspection', icon: 'search', count: 2, description: 'Denetim raporları' },
-            { id: 'insurance', name: 'Insurance', icon: 'shield-checkmark', count: 1, description: 'Sigorta poliçesi' },
-        ],
-    },
-    {
-        id: '2',
-        address: '567 Oak Avenue',
-        city: 'Cleveland, OH',
-        categories: [
-            { id: 'closing', name: 'Closing / HUD', icon: 'document-text', count: 3, description: 'Satış dokümanları' },
-            { id: 'lease', name: 'Lease', icon: 'clipboard', count: 1, description: 'Kira sözleşmesi' },
-            { id: 'inspection', name: 'Inspection', icon: 'search', count: 1, description: 'Denetim raporları' },
-            { id: 'insurance', name: 'Insurance', icon: 'shield-checkmark', count: 1, description: 'Sigorta poliçesi' },
-            { id: 'tax', name: 'Tax / HOA', icon: 'cash', count: 2, description: 'Vergi belgeleri' },
-        ],
-    },
-];
-
 export default function DocumentsScreen() {
-    const handlePress = () => {
-        if (Platform.OS === 'ios') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const documents = [
+        {
+            title: 'Kira Kontratları',
+            items: [
+                { id: '1', name: 'Miami Apt #4B - 2025', date: '21 Ara 2024', size: '2.4 MB' },
+                { id: '2', name: 'Austin Loft - 2025', date: '15 Oca 2025', size: '1.8 MB' },
+            ]
+        },
+        {
+            title: 'Vergi Dokümanları',
+            items: [
+                { id: '3', name: 'Annual Tax Report 2024', date: '31 Mar 2024', size: '4.1 MB' },
+            ]
         }
-    };
-
-    const totalDocuments = propertyDocuments.reduce(
-        (sum, prop) => sum + prop.categories.reduce((catSum, cat) => catSum + cat.count, 0),
-        0
-    );
+    ];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header */}
+        <LinearGradient
+            colors={[colors.background.main, '#0F172A']}
+            style={styles.container}
+        >
+            <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
                     <Text style={styles.title}>Dokümanlar</Text>
-                    <Text style={styles.subtitle}>{totalDocuments} dosya</Text>
+                    <TouchableOpacity style={styles.filterButton}>
+                        <Ionicons name="filter" size={20} color={colors.text.primary} />
+                    </TouchableOpacity>
                 </View>
 
-                {/* Search Bar with Blur Effect */}
-                <TouchableOpacity style={styles.searchContainer} onPress={handlePress}>
-                    {Platform.OS === 'ios' ? (
-                        <BlurView intensity={20} tint="dark" style={styles.searchBlur}>
-                            <Ionicons name="search" size={18} color={colors.text.muted} />
-                            <Text style={styles.searchPlaceholder}>Doküman ara...</Text>
-                        </BlurView>
-                    ) : (
-                        <View style={[styles.searchBlur, { backgroundColor: colors.primary[800] }]}>
-                            <Ionicons name="search" size={18} color={colors.text.muted} />
-                            <Text style={styles.searchPlaceholder}>Doküman ara...</Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
-
-                {/* Properties with Documents */}
-                {propertyDocuments.map((property) => (
-                    <View key={property.id} style={styles.propertySection}>
-                        {/* Property Header */}
-                        <View style={styles.propertyHeader}>
-                            <View style={styles.propertyIcon}>
-                                <Ionicons name="home" size={18} color={colors.accent[500]} />
-                            </View>
-                            <View>
-                                <Text style={styles.propertyAddress}>{property.address}</Text>
-                                <Text style={styles.propertyCity}>{property.city}</Text>
-                            </View>
-                        </View>
-
-                        {/* Document Categories */}
-                        <View style={styles.categoriesGrid}>
-                            {property.categories.map((category) => (
-                                <TouchableOpacity
-                                    key={category.id}
-                                    activeOpacity={0.7}
-                                    onPress={handlePress}
-                                    style={styles.categoryCardContainer}
-                                >
-                                    <Card style={styles.categoryCard}>
-                                        <View style={styles.categoryIconContainer}>
-                                            <Ionicons name={category.icon as any} size={22} color={colors.accent[500]} />
-                                            <View style={styles.countBadge}>
-                                                <Text style={styles.countText}>{category.count}</Text>
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    {documents.map((section, index) => (
+                        <View key={index} style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>{section.title}</Text>
+                            <Card style={styles.sectionCard}>
+                                {section.items.map((doc, docIndex) => (
+                                    <View key={doc.id}>
+                                        <TouchableOpacity style={styles.docItem}>
+                                            <View style={styles.docIconContainer}>
+                                                <Ionicons name="document-text" size={24} color={colors.accent.cyan} />
                                             </View>
-                                        </View>
-                                        <Text style={styles.categoryName}>{category.name}</Text>
-                                        <Text style={styles.categoryDesc}>{category.description}</Text>
-                                    </Card>
-                                </TouchableOpacity>
-                            ))}
+                                            <View style={styles.docInfo}>
+                                                <Text style={styles.docName}>{doc.name}</Text>
+                                                <View style={styles.docMeta}>
+                                                    <Text style={styles.docDate}>{doc.date}</Text>
+                                                    <Text style={styles.docSize}>• {doc.size}</Text>
+                                                </View>
+                                            </View>
+                                            <TouchableOpacity style={styles.downloadButton}>
+                                                <Ionicons name="download-outline" size={20} color={colors.text.secondary} />
+                                            </TouchableOpacity>
+                                        </TouchableOpacity>
+                                        {docIndex !== section.items.length - 1 && <View style={styles.separator} />}
+                                    </View>
+                                ))}
+                            </Card>
                         </View>
-                    </View>
-                ))}
-
-                {/* Upload Button */}
-                <TouchableOpacity style={styles.uploadButton} onPress={handlePress}>
-                    <View style={styles.uploadIconContainer}>
-                        <Ionicons name="cloud-upload-outline" size={24} color={colors.accent[500]} />
-                    </View>
-                    <View style={styles.uploadTextContainer}>
-                        <Text style={styles.uploadTitle}>Doküman Yükle</Text>
-                        <Text style={styles.uploadSubtitle}>PDF, JPG, PNG desteklenir</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.text.muted} />
-                </TouchableOpacity>
-            </ScrollView>
-        </SafeAreaView>
+                    ))}
+                </ScrollView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.primary[900],
+    },
+    safeArea: {
+        flex: 1,
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: spacing.xl,
-        paddingTop: spacing.lg,
-        paddingBottom: spacing.lg,
+        paddingVertical: spacing.lg,
     },
     title: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.display,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        letterSpacing: -1,
     },
-    subtitle: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
-    },
-    searchContainer: {
-        paddingHorizontal: spacing.xl,
-        marginBottom: spacing.xxl,
-    },
-    searchBlur: {
-        flexDirection: 'row',
+    filterButton: {
+        width: 40,
+        height: 40,
+        borderRadius: borderRadius.full,
+        backgroundColor: colors.background.subtle,
         alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.lg,
-        borderRadius: borderRadius.lg,
+        justifyContent: 'center',
         borderWidth: 1,
-        borderColor: colors.border.default,
-        overflow: 'hidden',
+        borderColor: colors.border.subtle,
     },
-    searchPlaceholder: {
-        marginLeft: spacing.md,
-        fontSize: fontSize.base,
-        color: colors.text.muted,
+    scrollContent: {
+        paddingBottom: spacing.section,
     },
-    propertySection: {
-        marginBottom: spacing.xxl,
+    sectionContainer: {
+        marginBottom: spacing.xl,
     },
-    propertyHeader: {
+    sectionTitle: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+        marginLeft: spacing.xl,
+        marginBottom: spacing.md,
+    },
+    sectionCard: {
+        marginHorizontal: spacing.xl,
+        padding: 0,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        ...shadows.card,
+    },
+    docItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.xl,
-        marginBottom: spacing.lg,
+        padding: spacing.md,
     },
-    propertyIcon: {
-        width: 36,
-        height: 36,
+    docIconContainer: {
+        width: 48,
+        height: 48,
         borderRadius: borderRadius.md,
-        backgroundColor: `${colors.accent[500]}20`,
+        backgroundColor: `${colors.accent.cyan}15`,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.md,
     },
-    propertyAddress: {
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.semibold,
-        color: colors.text.primary,
-    },
-    propertyCity: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginTop: 2,
-    },
-    categoriesGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        paddingHorizontal: spacing.lg,
-        gap: spacing.md,
-    },
-    categoryCardContainer: {
-        width: '47%',
-    },
-    categoryCard: {
-        alignItems: 'center',
-        paddingVertical: spacing.xl,
-    },
-    categoryIconContainer: {
-        position: 'relative',
-        marginBottom: spacing.md,
-    },
-    countBadge: {
-        position: 'absolute',
-        top: -6,
-        right: -10,
-        backgroundColor: colors.accent[500],
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    countText: {
-        fontSize: 10,
-        fontWeight: fontWeight.bold,
-        color: colors.white,
-    },
-    categoryName: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold,
-        color: colors.text.primary,
-        textAlign: 'center',
-        marginBottom: spacing.xs,
-    },
-    categoryDesc: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        textAlign: 'center',
-    },
-    uploadButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: spacing.xl,
-        marginBottom: spacing.xxxl,
-        padding: spacing.lg,
-        borderWidth: 2,
-        borderColor: colors.border.default,
-        borderStyle: 'dashed',
-        borderRadius: borderRadius.lg,
-    },
-    uploadIconContainer: {
-        width: 44,
-        height: 44,
-        borderRadius: borderRadius.md,
-        backgroundColor: `${colors.accent[500]}15`,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: spacing.lg,
-    },
-    uploadTextContainer: {
+    docInfo: {
         flex: 1,
     },
-    uploadTitle: {
+    docName: {
         fontSize: fontSize.base,
-        fontWeight: fontWeight.semibold,
+        fontWeight: fontWeight.medium as any,
         color: colors.text.primary,
+        marginBottom: 2,
     },
-    uploadSubtitle: {
+    docMeta: {
+        flexDirection: 'row',
+        gap: spacing.sm,
+    },
+    docDate: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginTop: 2,
+        color: colors.text.secondary,
+    },
+    docSize: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+    },
+    downloadButton: {
+        padding: spacing.sm,
+    },
+    separator: {
+        height: 1,
+        backgroundColor: colors.border.subtle,
+        marginLeft: spacing.xl + 48, // Indent past icon
     },
 });

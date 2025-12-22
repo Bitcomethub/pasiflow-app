@@ -1,552 +1,324 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Card } from '@/components/ui';
 
-// City data from website ROI calculator
-const cityData = {
-    detroit: {
-        name: 'Detroit, MI',
-        minBudget: 75000,
-        maxBudget: 110000,
-        avgRentRatio: 0.0125,
-        taxRate: 0.014,
-        insuranceRate: 0.011,
-        highlight: 'Maksimum Nakit Akışı',
-    },
-    cleveland: {
-        name: 'Cleveland, OH',
-        minBudget: 85000,
-        maxBudget: 120000,
-        avgRentRatio: 0.012,
-        taxRate: 0.01,
-        insuranceRate: 0.012,
-        highlight: 'Dengeli & Güvenli',
-    },
-    memphis: {
-        name: 'Memphis, TN',
-        minBudget: 90000,
-        maxBudget: 130000,
-        avgRentRatio: 0.011,
-        taxRate: 0.008,
-        insuranceRate: 0.012,
-        highlight: 'Vergi Avantajı',
-    },
+// Simple implementation of a slider-like component since we don't have Slider installed
+const CustomSlider = ({ value, onValueChange, min, max, format }: { value: number, onValueChange: (val: number) => void, min: number, max: number, format: (val: number) => string }) => {
+    return (
+        <View style={sliderStyles.container}>
+            <View style={sliderStyles.track}>
+                <View style={[sliderStyles.fill, { width: `${((value - min) / (max - min)) * 100}%` }]} />
+            </View>
+            <View style={sliderStyles.controls}>
+                <TouchableOpacity onPress={() => onValueChange(Math.max(min, value - (max - min) * 0.1))}>
+                    <Ionicons name="remove-circle-outline" size={28} color={colors.text.secondary} />
+                </TouchableOpacity>
+                <Text style={sliderStyles.value}>{format(value)}</Text>
+                <TouchableOpacity onPress={() => onValueChange(Math.min(max, value + (max - min) * 0.1))}>
+                    <Ionicons name="add-circle-outline" size={28} color={colors.accent.cyan} />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
 };
 
-const PASIFLOW_SERVICE_FEE = 5000;
-const MANAGEMENT_FEE_RATE = 0.1;
-const YEARLY_APPRECIATION_RATE = 0.07;
-
-const holdingPeriods = [1, 3, 5, 10];
-const propertyOptions = [1, 2, 3, 5, 10];
+const sliderStyles = StyleSheet.create({
+    container: {
+        marginVertical: spacing.md,
+    },
+    track: {
+        height: 4,
+        backgroundColor: colors.background.subtle,
+        borderRadius: 2,
+        marginBottom: spacing.md,
+    },
+    fill: {
+        height: '100%',
+        backgroundColor: colors.accent.cyan,
+        borderRadius: 2,
+    },
+    controls: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    value: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    }
+});
 
 export default function SimulatorScreen() {
-    const [selectedCity, setSelectedCity] = useState<keyof typeof cityData>('detroit');
-    const [propertyCount, setPropertyCount] = useState(1);
-    const [holdingPeriod, setHoldingPeriod] = useState(5);
-    const [appreciationRate, setAppreciationRate] = useState(7);
-    const [rentGrowthRate, setRentGrowthRate] = useState(3);
+    const [investmentAmount, setInvestmentAmount] = useState(50000);
+    const [years, setYears] = useState(5);
+    const [selectedCity, setSelectedCity] = useState('Miami');
 
-    const city = cityData[selectedCity];
-    const avgPrice = (city.minBudget + city.maxBudget) / 2;
+    const CITIES = [
+        { name: 'Miami', appreciation: 12, rentalYield: 6.8, color: colors.accent.cyan },
+        { name: 'Austin', appreciation: 8.5, rentalYield: 5.5, color: colors.accent.purple },
+        { name: 'Detroit', appreciation: 15, rentalYield: 9.2, color: colors.warning },
+    ];
 
-    // Calculations
-    const totalPurchasePrice = avgPrice * propertyCount;
-    const totalInvestment = (avgPrice + PASIFLOW_SERVICE_FEE) * propertyCount;
+    const calculateReturns = () => {
+        const selectedCityData = CITIES.find(c => c.name === selectedCity) || CITIES[0];
 
-    const monthlyRentPerProperty = avgPrice * city.avgRentRatio;
-    const yearlyRentPerProperty = monthlyRentPerProperty * 12;
+        // Compound interest formula for appreciation: A = P(1 + r)^t
+        const futureValue = investmentAmount * Math.pow((1 + selectedCityData.appreciation / 100), years);
+        const totalAppreciation = futureValue - investmentAmount;
 
-    // Annual expenses per property
-    const yearlyPropertyTax = avgPrice * city.taxRate;
-    const yearlyInsurance = avgPrice * city.insuranceRate;
-    const yearlyManagement = yearlyRentPerProperty * MANAGEMENT_FEE_RATE;
-    const totalYearlyExpensesPerProperty = yearlyPropertyTax + yearlyInsurance + yearlyManagement;
+        // Simple rental yield calculation (reinvested annually for simplicity approx)
+        // Total Rent = P * yield * t
+        const annualRent = investmentAmount * (selectedCityData.rentalYield / 100);
+        const totalRentalIncome = annualRent * years;
 
-    const yearlyNetIncomePerProperty = yearlyRentPerProperty - totalYearlyExpensesPerProperty;
-    const totalYearlyNetIncome = yearlyNetIncomePerProperty * propertyCount;
-    const monthlyNetIncome = totalYearlyNetIncome / 12;
+        const totalReturn = totalAppreciation + totalRentalIncome;
+        const roi = (totalReturn / investmentAmount) * 100;
 
-    // Future value calculations
-    const appreciationDecimal = appreciationRate / 100;
-    const futurePropertyValue = totalPurchasePrice * Math.pow(1 + appreciationDecimal, holdingPeriod);
-    const appreciationAmount = futurePropertyValue - totalPurchasePrice;
-
-    // Total rental income over holding period (with rent growth)
-    let totalRentalIncome = 0;
-    const rentGrowthDecimal = rentGrowthRate / 100;
-    for (let year = 1; year <= holdingPeriod; year++) {
-        totalRentalIncome += totalYearlyNetIncome * Math.pow(1 + rentGrowthDecimal, year - 1);
-    }
-
-    const totalReturn = totalRentalIncome + appreciationAmount;
-    const totalRoiPercent = (totalReturn / totalInvestment) * 100;
-    const annualizedRoi = totalRoiPercent / holdingPeriod;
-
-    const handleSelect = () => {
-        if (Platform.OS === 'ios') {
-            Haptics.selectionAsync();
-        }
+        return {
+            futureValue,
+            totalAppreciation,
+            totalRentalIncome,
+            totalReturn,
+            roi
+        };
     };
 
+    const results = calculateReturns();
+
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header */}
+        <LinearGradient
+            colors={[colors.background.main, '#0F172A']}
+            style={styles.container}
+        >
+            <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Değer Simülasyonu</Text>
-                    <Text style={styles.subtitle}>Portföyünüzün geleceğini hesaplayın</Text>
+                    <Text style={styles.title}>Yatırım Simülatörü</Text>
                 </View>
 
-                {/* City Selection */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Yatırım Şehri</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={styles.cityRow}>
-                            {(Object.keys(cityData) as Array<keyof typeof cityData>).map((cityKey) => (
-                                <TouchableOpacity
-                                    key={cityKey}
-                                    onPress={() => {
-                                        setSelectedCity(cityKey);
-                                        handleSelect();
-                                    }}
-                                    activeOpacity={0.8}
-                                >
-                                    <Card
-                                        variant={selectedCity === cityKey ? 'accent' : 'default'}
-                                        style={[
-                                            styles.cityCard,
-                                            selectedCity === cityKey && styles.cityCardSelected,
-                                        ]}
-                                    >
-                                        <Text style={[
-                                            styles.cityName,
-                                            selectedCity === cityKey && styles.cityNameSelected,
-                                        ]}>
-                                            {cityData[cityKey].name}
-                                        </Text>
-                                        <Text style={styles.cityHighlight}>
-                                            {cityData[cityKey].highlight}
-                                        </Text>
-                                    </Card>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                    {/* City Selection */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cityScroll}>
+                        {CITIES.map((city) => (
+                            <TouchableOpacity
+                                key={city.name}
+                                style={[
+                                    styles.cityCard,
+                                    selectedCity === city.name && styles.cityCardSelected,
+                                    selectedCity === city.name && { borderColor: city.color, backgroundColor: `${city.color}10` }
+                                ]}
+                                onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                    setSelectedCity(city.name);
+                                }}
+                            >
+                                <Text style={[
+                                    styles.cityName,
+                                    selectedCity === city.name && { color: city.color }
+                                ]}>{city.name}</Text>
+                                <View style={styles.cityStats}>
+                                    <Text style={styles.cityStatLabel}>Değer Artışı</Text>
+                                    <Text style={[styles.cityStatValue, { color: city.color }]}>%{city.appreciation}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
                     </ScrollView>
-                </View>
 
-                {/* Property Count */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Mülk Sayısı</Text>
-                    <View style={styles.optionsRow}>
-                        {propertyOptions.map((count) => (
-                            <TouchableOpacity
-                                key={count}
-                                onPress={() => {
-                                    setPropertyCount(count);
-                                    handleSelect();
-                                }}
-                                style={[
-                                    styles.optionButton,
-                                    propertyCount === count && styles.optionButtonSelected,
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.optionText,
-                                    propertyCount === count && styles.optionTextSelected,
-                                ]}>
-                                    {count}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
+                    {/* Inputs */}
+                    <Card style={styles.inputCard}>
+                        <Text style={styles.inputLabel}>Yatırım Tutarı</Text>
+                        <CustomSlider
+                            value={investmentAmount}
+                            onValueChange={setInvestmentAmount}
+                            min={1000}
+                            max={500000}
+                            format={(val) => `$${val.toLocaleString()}`}
+                        />
 
-                {/* Holding Period */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Tutma Süresi</Text>
-                    <View style={styles.optionsRow}>
-                        {holdingPeriods.map((years) => (
-                            <TouchableOpacity
-                                key={years}
-                                onPress={() => {
-                                    setHoldingPeriod(years);
-                                    handleSelect();
-                                }}
-                                style={[
-                                    styles.optionButton,
-                                    styles.optionButtonWide,
-                                    holdingPeriod === years && styles.optionButtonSelected,
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.optionText,
-                                    holdingPeriod === years && styles.optionTextSelected,
-                                ]}>
-                                    {years} Yıl
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
+                        <View style={styles.divider} />
 
-                {/* Rate Adjustments */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Varsayımlar</Text>
-                    <Card style={styles.ratesCard}>
-                        <View style={styles.rateRow}>
-                            <View style={styles.rateInfo}>
-                                <Text style={styles.rateLabel}>Değer Artışı (Yıllık)</Text>
-                                <Text style={styles.rateValue}>%{appreciationRate}</Text>
-                            </View>
-                            <View style={styles.rateControls}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setAppreciationRate(Math.max(3, appreciationRate - 1));
-                                        handleSelect();
-                                    }}
-                                    style={styles.rateButton}
-                                >
-                                    <Ionicons name="remove" size={18} color={colors.text.primary} />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setAppreciationRate(Math.min(12, appreciationRate + 1));
-                                        handleSelect();
-                                    }}
-                                    style={styles.rateButton}
-                                >
-                                    <Ionicons name="add" size={18} color={colors.text.primary} />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <View style={[styles.rateRow, { borderTopWidth: 1, borderTopColor: colors.border.default, paddingTop: spacing.lg }]}>
-                            <View style={styles.rateInfo}>
-                                <Text style={styles.rateLabel}>Kira Artışı (Yıllık)</Text>
-                                <Text style={styles.rateValue}>%{rentGrowthRate}</Text>
-                            </View>
-                            <View style={styles.rateControls}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setRentGrowthRate(Math.max(1, rentGrowthRate - 1));
-                                        handleSelect();
-                                    }}
-                                    style={styles.rateButton}
-                                >
-                                    <Ionicons name="remove" size={18} color={colors.text.primary} />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setRentGrowthRate(Math.min(8, rentGrowthRate + 1));
-                                        handleSelect();
-                                    }}
-                                    style={styles.rateButton}
-                                >
-                                    <Ionicons name="add" size={18} color={colors.text.primary} />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Card>
-                </View>
-
-                {/* Results */}
-                <View style={styles.resultsSection}>
-                    <Text style={styles.resultsTitle}>{holdingPeriod} Yıl Sonunda</Text>
-
-                    {/* Main Result Card */}
-                    <Card variant="accent" style={styles.mainResultCard}>
-                        <Text style={styles.mainResultLabel}>TOPLAM GETİRİ</Text>
-                        <Text style={styles.mainResultValue}>${Math.round(totalReturn).toLocaleString()}</Text>
-                        <View style={styles.mainResultStats}>
-                            <View style={styles.mainResultStat}>
-                                <Text style={styles.mainResultStatValue}>%{totalRoiPercent.toFixed(0)}</Text>
-                                <Text style={styles.mainResultStatLabel}>Toplam ROI</Text>
-                            </View>
-                            <View style={styles.mainResultDivider} />
-                            <View style={styles.mainResultStat}>
-                                <Text style={styles.mainResultStatValue}>%{annualizedRoi.toFixed(1)}</Text>
-                                <Text style={styles.mainResultStatLabel}>Yıllık Ortalama</Text>
-                            </View>
-                        </View>
+                        <Text style={styles.inputLabel}>Vade (Yıl)</Text>
+                        <CustomSlider
+                            value={years}
+                            onValueChange={setYears}
+                            min={1}
+                            max={30}
+                            format={(val) => `${Math.round(val)} Yıl`}
+                        />
                     </Card>
 
-                    {/* Breakdown */}
-                    <View style={styles.breakdownGrid}>
-                        <Card style={styles.breakdownCard}>
-                            <Ionicons name="trending-up" size={24} color={colors.success[500]} />
-                            <Text style={styles.breakdownValue}>${Math.round(futurePropertyValue).toLocaleString()}</Text>
-                            <Text style={styles.breakdownLabel}>Portföy Değeri</Text>
-                            <Text style={styles.breakdownSubtext}>+${Math.round(appreciationAmount).toLocaleString()}</Text>
-                        </Card>
+                    {/* Results - Cosmic Highlight */}
+                    <LinearGradient
+                        colors={[colors.primary[800], colors.primary[900]]}
+                        style={styles.resultCard}
+                    >
+                        <Text style={styles.resultTitle}>Tahmini Toplam Getiri</Text>
+                        <Text style={styles.resultAmount}>${results.totalReturn.toLocaleString(undefined, { maximumFractionDigits: 0 })}</Text>
 
-                        <Card style={styles.breakdownCard}>
-                            <Ionicons name="wallet" size={24} color={colors.accent[500]} />
-                            <Text style={styles.breakdownValue}>${Math.round(totalRentalIncome).toLocaleString()}</Text>
-                            <Text style={styles.breakdownLabel}>Kira Geliri</Text>
-                            <Text style={styles.breakdownSubtext}>{holdingPeriod} yıl toplam</Text>
-                        </Card>
-                    </View>
+                        <View style={styles.roiContainer}>
+                            <Text style={styles.roiLabel}>Toplam ROI</Text>
+                            <Text style={styles.roiValue}>%{results.roi.toFixed(1)}</Text>
+                        </View>
 
-                    {/* Investment Summary */}
-                    <Card style={styles.summaryCard}>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Toplam Yatırım</Text>
-                            <Text style={styles.summaryValue}>${Math.round(totalInvestment).toLocaleString()}</Text>
+                        <View style={styles.breakdownContainer}>
+                            <View style={styles.breakdownItem}>
+                                <Text style={styles.breakdownLabel}>Değer Artışı</Text>
+                                <Text style={styles.breakdownValue}>+${results.totalAppreciation.toLocaleString(undefined, { maximumFractionDigits: 0 })}</Text>
+                            </View>
+                            <View style={styles.breakdownItem}>
+                                <Text style={styles.breakdownLabel}>Kira Geliri</Text>
+                                <Text style={styles.breakdownValue}>+${results.totalRentalIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</Text>
+                            </View>
                         </View>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Aylık Net Gelir</Text>
-                            <Text style={[styles.summaryValue, { color: colors.success[500] }]}>
-                                ${Math.round(monthlyNetIncome).toLocaleString()}
-                            </Text>
-                        </View>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Yıllık Net Gelir</Text>
-                            <Text style={[styles.summaryValue, { color: colors.success[500] }]}>
-                                ${Math.round(totalYearlyNetIncome).toLocaleString()}
-                            </Text>
-                        </View>
-                    </Card>
-                </View>
-
-                {/* Disclaimer */}
-                <Text style={styles.disclaimer}>
-                    * Hesaplamalar tahminidir. Gerçek sonuçlar piyasa koşullarına göre değişebilir.
-                </Text>
-            </ScrollView>
-        </SafeAreaView>
+                    </LinearGradient>
+                </ScrollView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.primary[900],
+    },
+    safeArea: {
+        flex: 1,
     },
     header: {
         paddingHorizontal: spacing.xl,
-        paddingTop: spacing.lg,
-        paddingBottom: spacing.lg,
+        paddingVertical: spacing.lg,
     },
     title: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
+        fontSize: fontSize.display,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        letterSpacing: -1,
     },
-    subtitle: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
+    scrollContent: {
+        paddingBottom: 100,
     },
-    section: {
+    cityScroll: {
+        paddingHorizontal: spacing.xl,
         marginBottom: spacing.xl,
     },
-    sectionTitle: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold,
-        color: colors.text.secondary,
-        marginBottom: spacing.md,
-        paddingHorizontal: spacing.xl,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    cityRow: {
-        flexDirection: 'row',
-        paddingHorizontal: spacing.xl,
-        gap: spacing.md,
-    },
     cityCard: {
+        padding: spacing.lg,
+        backgroundColor: colors.background.card,
+        borderRadius: borderRadius.xl,
+        marginRight: spacing.md,
         width: 140,
-        paddingVertical: spacing.lg,
-        paddingHorizontal: spacing.lg,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
     },
     cityCardSelected: {
-        borderColor: colors.accent[500],
         borderWidth: 2,
     },
     cityName: {
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-        marginBottom: spacing.xs,
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.secondary,
+        marginBottom: spacing.md,
     },
-    cityNameSelected: {
-        color: colors.accent[500],
+    cityStats: {
+        gap: 2,
     },
-    cityHighlight: {
+    cityStatLabel: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
+        color: colors.text.tertiary,
     },
-    optionsRow: {
-        flexDirection: 'row',
-        paddingHorizontal: spacing.xl,
-        gap: spacing.sm,
+    cityStatValue: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
     },
-    optionButton: {
-        flex: 1,
-        paddingVertical: spacing.lg,
-        alignItems: 'center',
-        backgroundColor: colors.primary[800],
-        borderRadius: borderRadius.lg,
-        borderWidth: 1,
-        borderColor: colors.border.default,
-    },
-    optionButtonWide: {
-        paddingHorizontal: spacing.lg,
-    },
-    optionButtonSelected: {
-        backgroundColor: colors.accent[500],
-        borderColor: colors.accent[500],
-    },
-    optionText: {
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-    },
-    optionTextSelected: {
-        color: colors.white,
-    },
-    ratesCard: {
+    inputCard: {
         marginHorizontal: spacing.xl,
+        padding: spacing.xl,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        marginBottom: spacing.xl,
     },
-    rateRow: {
+    inputLabel: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        fontWeight: fontWeight.bold as any,
+        marginBottom: -spacing.sm, // pulling closer to slider
+    },
+    divider: {
+        height: 1,
+        backgroundColor: colors.border.subtle,
+        marginVertical: spacing.lg,
+    },
+    resultCard: {
+        marginHorizontal: spacing.xl,
+        padding: spacing.xl,
+        borderRadius: borderRadius.xxl,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        ...shadows.float,
+    },
+    resultTitle: {
+        fontSize: fontSize.sm,
+        color: colors.text.tertiary,
+        marginBottom: spacing.xs,
+        letterSpacing: 1,
+        fontWeight: fontWeight.bold as any,
+        textTransform: 'uppercase',
+    },
+    resultAmount: {
+        fontSize: 42,
+        fontWeight: fontWeight.bold as any,
+        color: colors.success,
+        marginBottom: spacing.lg,
+        textShadowColor: 'rgba(52, 211, 153, 0.3)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
+    },
+    roiContainer: {
+        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.sm,
+        borderRadius: borderRadius.full,
+        marginBottom: spacing.xl,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    rateInfo: {
-        flex: 1,
-    },
-    rateLabel: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-    },
-    rateValue: {
-        fontSize: fontSize.lg,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-        marginTop: spacing.xs,
-    },
-    rateControls: {
-        flexDirection: 'row',
         gap: spacing.sm,
     },
-    rateButton: {
-        width: 36,
-        height: 36,
-        borderRadius: borderRadius.md,
-        backgroundColor: colors.primary[700],
-        alignItems: 'center',
-        justifyContent: 'center',
+    roiLabel: {
+        color: colors.success,
+        fontSize: fontSize.sm,
+        fontWeight: fontWeight.bold as any,
     },
-    resultsSection: {
-        paddingHorizontal: spacing.xl,
-        marginTop: spacing.lg,
-    },
-    resultsTitle: {
+    roiValue: {
+        color: colors.success,
         fontSize: fontSize.lg,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-        textAlign: 'center',
-        marginBottom: spacing.lg,
+        fontWeight: fontWeight.bold as any,
     },
-    mainResultCard: {
-        alignItems: 'center',
-        paddingVertical: spacing.xxl,
-        marginBottom: spacing.lg,
-        ...shadows.accent,
-    },
-    mainResultLabel: {
-        fontSize: fontSize.xs,
-        fontWeight: fontWeight.bold,
-        color: colors.accent[500],
-        letterSpacing: 1,
-        marginBottom: spacing.sm,
-    },
-    mainResultValue: {
-        fontSize: fontSize.display,
-        fontWeight: fontWeight.extrabold,
-        color: colors.accent[500],
-        marginBottom: spacing.lg,
-    },
-    mainResultStats: {
-        flexDirection: 'row',
-        borderTopWidth: 1,
-        borderTopColor: colors.border.default,
-        paddingTop: spacing.lg,
+    breakdownContainer: {
         width: '100%',
-    },
-    mainResultStat: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    mainResultStatValue: {
-        fontSize: fontSize.xl,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-    },
-    mainResultStatLabel: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
-    },
-    mainResultDivider: {
-        width: 1,
-        backgroundColor: colors.border.default,
-    },
-    breakdownGrid: {
         flexDirection: 'row',
-        gap: spacing.md,
-        marginBottom: spacing.lg,
+        paddingTop: spacing.lg,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.1)',
     },
-    breakdownCard: {
+    breakdownItem: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: spacing.xl,
-    },
-    breakdownValue: {
-        fontSize: fontSize.lg,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-        marginTop: spacing.md,
     },
     breakdownLabel: {
         fontSize: fontSize.xs,
-        color: colors.text.muted,
-        marginTop: spacing.xs,
+        color: colors.text.secondary,
+        marginBottom: 4,
     },
-    breakdownSubtext: {
-        fontSize: fontSize.xs,
-        color: colors.success[500],
-        fontWeight: fontWeight.semibold,
-        marginTop: spacing.xs,
-    },
-    summaryCard: {
-        marginBottom: spacing.lg,
-    },
-    summaryRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: spacing.sm,
-    },
-    summaryLabel: {
-        fontSize: fontSize.sm,
-        color: colors.text.muted,
-    },
-    summaryValue: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.bold,
+    breakdownValue: {
+        fontSize: fontSize.base,
         color: colors.text.primary,
-    },
-    disclaimer: {
-        fontSize: fontSize.xs,
-        color: colors.text.muted,
-        textAlign: 'center',
-        paddingHorizontal: spacing.xl,
-        paddingBottom: spacing.xxxl,
+        fontWeight: fontWeight.bold as any,
     },
 });

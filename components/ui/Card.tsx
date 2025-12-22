@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { colors, borderRadius, spacing, shadows } from '@/lib/theme';
 
 interface CardProps {
     children: React.ReactNode;
     variant?: 'default' | 'elevated' | 'accent' | 'success' | 'warning';
     padding?: 'none' | 'sm' | 'md' | 'lg';
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
 }
 
 export function Card({
@@ -39,28 +39,28 @@ const styles = StyleSheet.create({
     // Variants
     default: {
         backgroundColor: colors.background.card,
-        borderWidth: 1,
-        borderColor: colors.border.default,
+        ...shadows.sm, // Soft base shadow
+        borderWidth: 0,
     },
     elevated: {
         backgroundColor: colors.background.card,
-        borderWidth: 1,
-        borderColor: colors.border.light,
+        ...shadows.lg, // High elevation
+        borderWidth: 0,
     },
     accent: {
-        backgroundColor: `${colors.accent[500]}15`,
+        backgroundColor: colors.primary[50],
         borderWidth: 1,
-        borderColor: `${colors.accent[500]}30`,
+        borderColor: colors.primary[100],
     },
     success: {
-        backgroundColor: `${colors.success[500]}15`,
+        backgroundColor: '#ECFDF5',
         borderWidth: 1,
-        borderColor: `${colors.success[500]}30`,
+        borderColor: colors.success,
     },
     warning: {
-        backgroundColor: `${colors.warning[500]}15`,
+        backgroundColor: '#FFFBEB',
         borderWidth: 1,
-        borderColor: `${colors.warning[500]}30`,
+        borderColor: colors.warning,
     },
 
     // Padding

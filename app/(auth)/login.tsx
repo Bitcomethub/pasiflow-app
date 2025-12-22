@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/lib/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Button, TextInput } from '@/components/ui';
 
 export default function LoginScreen() {
@@ -16,15 +17,16 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         if (!email || !password) {
             setError('Lütfen tüm alanları doldurun');
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
 
-        // Demo credentials
         const DEMO_EMAIL = 'demo@pasiflow.com';
         const DEMO_PASSWORD = 'demo123';
 
         if (email.toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
             setError('Geçersiz e-posta veya şifre.\n\nDemo: demo@pasiflow.com / demo123');
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
 
@@ -35,7 +37,6 @@ export default function LoginScreen() {
         setLoading(true);
         setError('');
 
-        // Simulate login - replace with actual API call
         setTimeout(() => {
             setLoading(false);
             router.replace('/(tabs)');
@@ -43,174 +44,174 @@ export default function LoginScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
-            >
-                <View style={styles.content}>
-                    {/* Logo & Welcome */}
-                    <View style={styles.headerSection}>
-                        <View style={styles.logoContainer}>
-                            <Text style={styles.logoText}>Pasi</Text>
-                            <Text style={styles.logoAccent}>flow</Text>
-                        </View>
-                        <Text style={styles.welcomeTitle}>Hoş Geldiniz</Text>
-                        <Text style={styles.welcomeSubtitle}>
-                            Yatırım portföyünüze erişmek için giriş yapın
-                        </Text>
-                    </View>
-
-                    {/* Login Form */}
-                    <View style={styles.formSection}>
-                        {error ? (
-                            <View style={styles.errorContainer}>
-                                <Text style={styles.errorText}>{error}</Text>
+        <LinearGradient
+            colors={[colors.background.main, colors.primary[900]]}
+            style={styles.container}
+        >
+            <SafeAreaView style={styles.safeArea}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.keyboardView}
+                >
+                    <View style={styles.content}>
+                        {/* Header */}
+                        <View style={styles.header}>
+                            <View style={styles.logoContainer}>
+                                <Text style={styles.logoText}>Pasiflow</Text>
                             </View>
-                        ) : null}
+                            <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+                        </View>
 
-                        <TextInput
-                            label="E-posta"
-                            placeholder="ornek@email.com"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            icon="mail-outline"
-                        />
+                        {/* Login Card */}
+                        <LinearGradient
+                            colors={[colors.background.card, 'rgba(19, 19, 43, 0.8)']}
+                            style={styles.cardContainer}
+                        >
+                            {error ? (
+                                <View style={styles.errorContainer}>
+                                    <Text style={styles.errorText}>{error}</Text>
+                                </View>
+                            ) : null}
 
-                        <TextInput
-                            label="Şifre"
-                            placeholder="••••••••"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            icon="lock-closed-outline"
-                        />
+                            <TextInput
+                                label="E-posta Adresi"
+                                placeholder="ornek@email.com"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                icon="mail-outline"
+                                placeholderTextColor={colors.text.tertiary}
+                            />
 
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <Text style={styles.forgotPasswordText}>Şifremi Unuttum</Text>
-                        </TouchableOpacity>
+                            <TextInput
+                                label="Şifre"
+                                placeholder="••••••••"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                icon="lock-closed-outline"
+                                placeholderTextColor={colors.text.tertiary}
+                            />
 
-                        <Button
-                            title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-                            onPress={handleLogin}
-                            loading={loading}
-                            size="lg"
-                            style={styles.loginButton}
-                        />
-                    </View>
-
-                    {/* Footer */}
-                    <View style={styles.footer}>
-                        <Text style={styles.footerText}>Hesabınız yok mu?</Text>
-                        <Link href="/(auth)/register" asChild>
-                            <TouchableOpacity>
-                                <Text style={styles.registerLink}>Kayıt Olun</Text>
+                            <TouchableOpacity style={styles.forgotPassword}>
+                                <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
                             </TouchableOpacity>
-                        </Link>
-                    </View>
 
-                    {/* Support */}
-                    <TouchableOpacity style={styles.supportButton}>
-                        <Text style={styles.supportText}>Yardıma mı ihtiyacınız var? Destek Alın</Text>
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                            <Button
+                                title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                                onPress={handleLogin}
+                                loading={loading}
+                                size="lg"
+                                style={styles.loginButton}
+                                textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
+                            />
+                        </LinearGradient>
+
+                        {/* Footer - Social Proof / Register */}
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
+                            <Link href="/(auth)/register" asChild>
+                                <TouchableOpacity>
+                                    <Text style={styles.registerLink}>Hesap Oluşturun</Text>
+                                </TouchableOpacity>
+                            </Link>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.primary[900],
+    },
+    safeArea: {
+        flex: 1,
     },
     keyboardView: {
         flex: 1,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.xl,
         justifyContent: 'center',
     },
-    headerSection: {
+    content: {
+        paddingHorizontal: spacing.xxl,
+        width: '100%',
+        maxWidth: 500,
+        alignSelf: 'center',
+    },
+    header: {
         alignItems: 'center',
         marginBottom: spacing.giant,
     },
     logoContainer: {
         flexDirection: 'row',
-        marginBottom: spacing.xxl,
+        marginBottom: spacing.md,
     },
     logoText: {
         fontSize: fontSize.display,
-        fontWeight: fontWeight.bold,
+        fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
+        letterSpacing: -1,
+        textShadowColor: colors.accent.cyan,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 15, // Neon glow effect
     },
-    logoAccent: {
-        fontSize: fontSize.display,
-        fontWeight: fontWeight.bold,
-        color: colors.accent[500],
+    subtitle: {
+        fontSize: fontSize.lg,
+        color: colors.text.secondary,
+        fontWeight: fontWeight.medium as any,
     },
-    welcomeTitle: {
-        fontSize: fontSize.xxl,
-        fontWeight: fontWeight.bold,
-        color: colors.text.primary,
-        marginBottom: spacing.sm,
-    },
-    welcomeSubtitle: {
-        fontSize: fontSize.base,
-        color: colors.text.muted,
-        textAlign: 'center',
-    },
-    formSection: {
-        marginBottom: spacing.xxl,
+    cardContainer: {
+        borderRadius: borderRadius.xxl,
+        padding: spacing.xl,
+        borderWidth: 1,
+        borderColor: colors.border.highlight,
+        ...shadows.float,
     },
     errorContainer: {
-        backgroundColor: `${colors.error[500]}20`,
-        borderWidth: 1,
-        borderColor: colors.error[500],
-        borderRadius: borderRadius.md,
+        backgroundColor: 'rgba(248, 113, 113, 0.1)',
+        borderLeftWidth: 4,
+        borderLeftColor: colors.error,
         padding: spacing.md,
         marginBottom: spacing.lg,
+        borderRadius: borderRadius.sm,
     },
     errorText: {
-        color: colors.error[500],
+        color: colors.error,
         fontSize: fontSize.sm,
-        textAlign: 'center',
+        fontWeight: fontWeight.medium as any,
     },
     forgotPassword: {
         alignSelf: 'flex-end',
-        marginBottom: spacing.xxl,
+        marginTop: -spacing.sm,
+        marginBottom: spacing.xl,
     },
     forgotPasswordText: {
-        color: colors.accent[500],
+        color: colors.accent.cyan,
         fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold,
+        fontWeight: fontWeight.semibold as any,
     },
     loginButton: {
-        marginTop: spacing.md,
+        marginTop: spacing.sm,
+        backgroundColor: colors.accent.gradientStart,
+        ...shadows.glow,
     },
     footer: {
+        marginTop: spacing.giant,
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: spacing.sm,
-        marginBottom: spacing.xxl,
+        alignItems: 'center',
+        gap: spacing.xs,
     },
     footerText: {
-        color: colors.text.muted,
+        color: colors.text.secondary,
         fontSize: fontSize.base,
     },
     registerLink: {
-        color: colors.accent[500],
+        color: colors.accent.cyan,
         fontSize: fontSize.base,
-        fontWeight: fontWeight.bold,
-    },
-    supportButton: {
-        alignItems: 'center',
-    },
-    supportText: {
-        color: colors.text.muted,
-        fontSize: fontSize.sm,
+        fontWeight: fontWeight.bold as any,
     },
 });
