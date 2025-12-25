@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Parser = require('rss-parser');
+const { translateNewsItem, generateTurkishAnalysis } = require('../services/translationService');
 
 const parser = new Parser({
     customFields: {
@@ -45,21 +46,17 @@ router.get('/', async (req, res) => {
                         (item.content && item.content.match(/src="([^"]+)"/)?.[1]) ||
                         'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80';
 
-                    // Clean up content (remove HTML tags if needed, or keep for WebView)
-                    // For now, we prefer clean text or simple HTML. 
-                    // Let's keep it raw but prioritize content:encoded
+                    // Clean up content
                     let fullContent = item['content:encoded'] || item.content || item.contentSnippet;
-
-                    // Simple text cleanup if it's too raw (optional)
                     if (fullContent) {
                         fullContent = fullContent
-                            .replace(/<br\s*\/?>/gi, '\n') // Replace <br> with newlines
-                            .replace(/<p>/gi, '\n\n') // Paragraphs to double newlines
+                            .replace(/<br\s*\/?>/gi, '\n')
+                            .replace(/<p>/gi, '\n\n')
                             .replace(/<\/p>/gi, '')
-                            .replace(/<[^>]*>?/gm, '') // Remove remaining tags
-                            .replace(/&nbsp;/g, ' ') // Decode common entities
+                            .replace(/<[^>]*>?/gm, '')
+                            .replace(/&nbsp;/g, ' ')
                             .replace(/&amp;/g, '&')
-                            .replace(/\n\s*\n/g, '\n\n') // Normalize newlines
+                            .replace(/\n\s*\n/g, '\n\n')
                             .trim();
                     }
 
@@ -69,7 +66,7 @@ router.get('/', async (req, res) => {
                         link: item.link,
                         pubDate: item.pubDate,
                         snippet: item.contentSnippet?.substring(0, 200) + '...',
-                        content: fullContent, // Full content
+                        content: fullContent,
                         source: feed.title || 'Real Estate News',
                         image: image,
                     };
@@ -85,16 +82,22 @@ router.get('/', async (req, res) => {
 
         // Remove duplicates based on title
         const uniqueNews = Array.from(new Map(allNews.map(item => [item.title, item])).values());
+        const limitedNews = uniqueNews.slice(0, 10);
 
-        const limitedNews = uniqueNews.slice(0, 15);
+        // Translate all news to Turkish (in parallel)
+        console.log('Translating news to Turkish...');
+        const translatedNews = await Promise.all(
+            limitedNews.map(item => translateNewsItem(item))
+        );
+        console.log('Translation complete.');
 
-        // Update cache
+        // Update cache with translated news
         newsCache = {
-            data: limitedNews,
+            data: translatedNews,
             lastFetched: now,
         };
 
-        res.json({ news: limitedNews, cached: false });
+        res.json({ news: translatedNews, cached: false });
     } catch (error) {
         console.error('News fetch error:', error);
 
@@ -107,7 +110,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// AI Analysis Endpoint
+// AI Analysis Endpoint - Now with real OpenAI
 router.post('/analyze', async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -116,29 +119,12 @@ router.post('/analyze', async (req, res) => {
             return res.status(400).json({ error: 'Title is required' });
         }
 
-        // TODO: Integrate actual OpenAI call here
-        // const completion = await openai.chat.completions.create({ ... });
-
-        // Mock response for now (or use simple heuristic)
-        // This mimics the frontend logic but can be replaced with real AI
-        const combined = (title + ' ' + (content || '')).toLowerCase();
-        let sentiment = 'neutral';
-        let summary = 'Piyasa gelişmesi.';
-
-        if (combined.includes('increase') || combined.includes('rise') || combined.includes('growth')) {
-            sentiment = 'positive';
-            summary = 'Market showing signs of growth.';
-        } else if (combined.includes('decrease') || combined.includes('drop') || combined.includes('fall')) {
-            sentiment = 'negative';
-            summary = 'Market showing signs of cooling.';
-        }
+        // Generate Turkish AI analysis
+        const result = await generateTurkishAnalysis(title, content);
 
         res.json({
-            analysis: {
-                sentiment,
-                summary,
-                pasiflowView: `Pasiflow AI analysis for "${title}": ${summary}`
-            }
+            success: result.success,
+            analysis: result.analysis
         });
 
     } catch (error) {
@@ -148,3 +134,4 @@ router.post('/analyze', async (req, res) => {
 });
 
 module.exports = router;
+
