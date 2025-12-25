@@ -241,6 +241,8 @@ export default function PropertiesScreen() {
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
+                    initialNumToRender={5}
+                    removeClippedSubviews={false}
                     ListHeaderComponent={() => (
                         <>
                             <View style={styles.header}>
