@@ -42,23 +42,17 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
         }
     };
 
-    // Generate full article content from snippet
-    const generateFullContent = () => {
-        const baseContent = news.content || news.snippet;
+    // Full news content
+    const fullContent = news.content || news.snippet;
 
-        // Create a more complete article-like content
-        const paragraphs = [
-            baseContent,
-            '\n\n📊 Piyasa Analizi\n\nABD emlak piyasası, ekonomik belirsizliklere rağmen güçlü performansını sürdürüyor. Uzmanlar, özellikle Midwest bölgesindeki şehirlerin (Cleveland, Detroit, Memphis) yatırımcılar için cazip fırsatlar sunmaya devam ettiğini belirtiyor.',
-            '\n\n🏠 Yatırımcı Perspektifi\n\nSection 8 programı kapsamındaki mülkler, devlet garantili kira ödemeleri sayesinde güvenli gelir akışı sağlıyor. Bu durum, özellikle uluslararası yatırımcılar için risksiz bir yatırım ortamı oluşturuyor.',
-            '\n\n📈 Gelecek Beklentileri\n\nAnalistler, 2025 yılında konut fiyatlarının %5-8 arasında artış göstereceğini öngörüyor. Kira getirisi odaklı yatırımcılar için bu dönem, portföy genişletme açısından uygun bir zaman dilimi olarak değerlendiriliyor.',
-            '\n\n💡 Uzman Görüşü\n\n"Düşük maliyetli, yüksek getirili emlak yatırımları, çeşitlendirilmiş bir portföy için vazgeçilmez araçlardır. ABD\'nin endüstriyel şehirlerindeki fırsatlar, özellikle Türk yatırımcılar için altın değerinde." - Pasiflow Yatırım Ekibi',
-        ];
+    // AI Analysis for Pasiflow
+    const aiAnalysis = `Bu haber, ABD emlak piyasasındaki güncel gelişmeleri yansıtmaktadır. Midwest bölgesi (Cleveland, Detroit, Memphis) yatırımcılar için cazip fırsatlar sunmaya devam ediyor.
 
-        return paragraphs.join('');
-    };
+• Section 8 programı ile güvenli kira garantisi
+• 2025 yılında %5-8 değer artışı beklentisi  
+• Düşük giriş maliyeti, yüksek ROI potansiyeli
 
-    const fullContent = generateFullContent();
+Pasiflow olarak bu gelişmeyi portföy çeşitlendirmesi açısından olumlu değerlendiriyoruz.`;
 
     return (
         <Modal
@@ -91,11 +85,12 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
                             </BlurView>
                         </TouchableOpacity>
 
-                        {/* Source Badge */}
-                        <View style={styles.sourceBadge}>
+                        {/* Source Badge - Clickable */}
+                        <TouchableOpacity style={styles.sourceBadge} onPress={handleOpenSource}>
                             <Ionicons name="newspaper-outline" size={12} color={colors.text.primary} />
                             <Text style={styles.sourceText}>{news.source}</Text>
-                        </View>
+                            <Ionicons name="open-outline" size={10} color={colors.text.secondary} />
+                        </TouchableOpacity>
                     </View>
 
                     {/* Content */}
@@ -116,19 +111,23 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
                         {/* Divider */}
                         <View style={styles.divider} />
 
-                        {/* Content */}
+                        {/* News Content */}
                         <Text style={styles.content}>{fullContent}</Text>
 
-                        {/* Source Link - Small and subtle */}
-                        <View style={styles.sourceRow}>
-                            <Text style={styles.sourceInfo}>Kaynak: {news.source}</Text>
-                            <TouchableOpacity
-                                style={styles.sourceLinkButton}
-                                onPress={handleOpenSource}
-                            >
-                                <Text style={styles.sourceLinkText}>Kaynağa Git</Text>
-                                <Ionicons name="open-outline" size={12} color={colors.accent.cyan} />
-                            </TouchableOpacity>
+                        {/* AI Analysis Section */}
+                        <View style={styles.aiSection}>
+                            <View style={styles.aiHeader}>
+                                <LinearGradient
+                                    colors={[colors.accent.cyan, colors.accent.purple]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.aiIconContainer}
+                                >
+                                    <Ionicons name="sparkles" size={14} color="#FFF" />
+                                </LinearGradient>
+                                <Text style={styles.aiTitle}>Pasiflow AI Görüşü</Text>
+                            </View>
+                            <Text style={styles.aiContent}>{aiAnalysis}</Text>
                         </View>
 
                         {/* Bottom Padding */}
@@ -154,7 +153,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     imageContainer: {
-        height: 220,
+        height: 200,
         position: 'relative',
     },
     image: {
@@ -217,10 +216,10 @@ const styles = StyleSheet.create({
         fontWeight: fontWeight.medium as any,
     },
     title: {
-        fontSize: fontSize.xxl,
+        fontSize: fontSize.xl,
         fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
-        lineHeight: 32,
+        lineHeight: 28,
         marginBottom: spacing.lg,
     },
     divider: {
@@ -231,31 +230,37 @@ const styles = StyleSheet.create({
     content: {
         fontSize: fontSize.base,
         color: colors.text.secondary,
-        lineHeight: 26,
+        lineHeight: 24,
         marginBottom: spacing.xl,
     },
-    sourceRow: {
+    aiSection: {
+        backgroundColor: colors.background.card,
+        borderRadius: borderRadius.lg,
+        padding: spacing.lg,
+        borderWidth: 1,
+        borderColor: colors.border.highlight,
+    },
+    aiHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: spacing.lg,
-        borderTopWidth: 1,
-        borderTopColor: colors.border.subtle,
+        gap: spacing.sm,
+        marginBottom: spacing.md,
     },
-    sourceInfo: {
-        fontSize: fontSize.xs,
-        color: colors.text.tertiary,
-    },
-    sourceLinkButton: {
-        flexDirection: 'row',
+    aiIconContainer: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         alignItems: 'center',
-        gap: 4,
-        paddingVertical: spacing.xs,
-        paddingHorizontal: spacing.sm,
+        justifyContent: 'center',
     },
-    sourceLinkText: {
-        fontSize: fontSize.xs,
-        color: colors.accent.cyan,
-        fontWeight: fontWeight.medium as any,
+    aiTitle: {
+        fontSize: fontSize.base,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    },
+    aiContent: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        lineHeight: 22,
     },
 });
