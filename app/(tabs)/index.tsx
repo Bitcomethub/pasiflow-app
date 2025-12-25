@@ -151,7 +151,7 @@ export default function Dashboard() {
             const pulseAnimation = Animated.loop(
                 Animated.sequence([
                     Animated.timing(actionPulseAnim, {
-                        toValue: 1.08,
+                        toValue: 1.03,
                         duration: 1000,
                         useNativeDriver: true,
                     }),
