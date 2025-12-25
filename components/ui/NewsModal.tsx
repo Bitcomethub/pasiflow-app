@@ -114,7 +114,7 @@ Pasiflow olarak bu gelişmeyi portföy çeşitlendirmesi açısından olumlu de�
                         {/* News Content */}
                         <Text style={styles.content}>{fullContent}</Text>
 
-                        {/* AI Analysis Section */}
+                        {/* Pasiflow Analysis Section */}
                         <View style={styles.aiSection}>
                             <View style={styles.aiHeader}>
                                 <LinearGradient
@@ -123,9 +123,9 @@ Pasiflow olarak bu gelişmeyi portföy çeşitlendirmesi açısından olumlu de�
                                     end={{ x: 1, y: 0 }}
                                     style={styles.aiIconContainer}
                                 >
-                                    <Ionicons name="sparkles" size={14} color="#FFF" />
+                                    <Ionicons name="analytics" size={14} color="#FFF" />
                                 </LinearGradient>
-                                <Text style={styles.aiTitle}>Pasiflow AI Görüşü</Text>
+                                <Text style={styles.aiTitle}>Pasiflow Görüşü</Text>
                             </View>
                             <Text style={styles.aiContent}>{aiAnalysis}</Text>
                         </View>
