@@ -206,6 +206,15 @@ export default function LoginScreen() {
                                         </TouchableOpacity>
                                     </Link>
                                 </View>
+
+                                {/* Agent Login Link */}
+                                <TouchableOpacity
+                                    onPress={() => router.push('/agent/dashboard')}
+                                    style={styles.agentLoginButton}
+                                >
+                                    <Text style={styles.agentLoginText}>Acente Girişi</Text>
+                                    <Ionicons name="briefcase-outline" size={16} color={colors.text.tertiary} />
+                                </TouchableOpacity>
                             </View>
                         </ScrollView>
                     </TouchableWithoutFeedback>
@@ -339,4 +348,17 @@ const styles = StyleSheet.create({
         fontSize: fontSize.base,
         fontWeight: fontWeight.bold as any,
     },
+    agentLoginButton: {
+        marginTop: spacing.xl,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.sm,
+        gap: spacing.xs,
+        opacity: 0.7,
+    },
+    agentLoginText: {
+        color: colors.text.tertiary,
+        fontSize: fontSize.sm,
+    }
 });

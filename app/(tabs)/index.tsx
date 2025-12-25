@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
-import { Card } from '@/components/ui';
+import { Card, PortfolioComparison } from '@/components/ui';
 import { NewsModal } from '@/components/ui/NewsModal';
 import { fetchNews, NewsItem } from '@/lib/api';
 
@@ -287,6 +287,12 @@ export default function Dashboard() {
                         </LinearGradient>
                     </Animated.View>
 
+                    {/* Portfolio Comparison Chart */}
+                    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: Animated.add(slideAnim, 30) }] }}>
+                        {/* @ts-ignore */}
+                        <PortfolioComparison roi={displayROI} />
+                    </Animated.View>
+
                     {/* Quick Actions */}
                     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: Animated.add(slideAnim, 40) }] }}>
                         <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
@@ -296,7 +302,7 @@ export default function Dashboard() {
                                 { icon: 'add-circle', label: 'Yatırım Yap', color: colors.accent.cyan, route: '/properties', highlight: true },
                                 { icon: 'calculator', label: 'Hesapla', color: colors.accent.purple, route: '/simulator' },
                                 { icon: 'document-text', label: 'Raporlar', color: colors.primary[400], route: '/documents' },
-                                { icon: 'chatbubble-ellipses', label: 'Destek', color: colors.accent.gradientStart, route: '/more/contact' },
+                                { icon: 'chatbubble-ellipses', label: 'AI Asistan', color: colors.accent.gradientStart, route: '/chat' },
                             ].map((action, index) => (
                                 <Animated.View
                                     key={index}
