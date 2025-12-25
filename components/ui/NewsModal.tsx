@@ -71,73 +71,92 @@ Bu gelişmeler ışığında, bilinçli yatırımcılar portföylerini çeşitle
 
     const fullContent = generateFullContent();
 
-    // Dynamic Pasiflow analysis based on actual news content
+    // Dynamic Pasiflow analysis based on actual news title/content
     const generateAnalysis = () => {
         const title = news.title;
-        const snippet = news.snippet || '';
-        const combinedLower = (title + ' ' + snippet).toLowerCase();
+        const lowerTitle = title.toLowerCase();
 
-        // Extract key terms from the news
-        const extractKeyPoints = () => {
-            const points: string[] = [];
+        // Helper to get random item from array for variety
+        const getRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-            // Location analysis
-            if (combinedLower.includes('detroit')) points.push('Detroit bölgesi yatırım potansiyeli artıyor');
-            if (combinedLower.includes('cleveland')) points.push('Cleveland pazarı güçlü kalmaya devam ediyor');
-            if (combinedLower.includes('memphis')) points.push('Memphis kira getirileri çekici seviyede');
-            if (combinedLower.includes('ohio') || combinedLower.includes('michigan') || combinedLower.includes('tennessee'))
-                points.push('Midwest bölgesi yatırımcılar için cazip');
-
-            // Market trends
-            if (combinedLower.includes('artış') || combinedLower.includes('increase') || combinedLower.includes('rise') || combinedLower.includes('growth'))
-                points.push('Fiyat artış trendi mevcut pozisyonları güçlendiriyor');
-            if (combinedLower.includes('düşüş') || combinedLower.includes('drop') || combinedLower.includes('decline'))
-                points.push('Düşüş, yeni alım fırsatları yaratabilir');
-
-            // Investment factors
-            if (combinedLower.includes('kira') || combinedLower.includes('rent'))
-                points.push('Kira dinamikleri nakit akışını etkiliyor');
-            if (combinedLower.includes('faiz') || combinedLower.includes('rate') || combinedLower.includes('mortgage'))
-                points.push('Faiz oranları finansman maliyetlerini belirliyor');
-            if (combinedLower.includes('section 8') || combinedLower.includes('hud'))
-                points.push('Section 8 garantisi ile güvenli gelir');
-
-            // Default points if none match
-            if (points.length === 0) {
-                points.push('Piyasa gelişmeleri yakından takip edilmeli');
-                points.push('Çeşitlendirilmiş portföy riski azaltır');
-            }
-
-            return points.slice(0, 3); // Max 3 points
-        };
-
-        const keyPoints = extractKeyPoints();
-        const pointsList = keyPoints.map(p => `• ${p}`).join('\n');
-
-        // Determine sentiment
         let sentiment = '📊';
+        let mainAnalysis = '';
+        let bulletPoints = [];
         let recommendation = '';
 
-        if (combinedLower.includes('artış') || combinedLower.includes('increase') || combinedLower.includes('positive') || combinedLower.includes('growth')) {
+        // --- 1. DETECT TOPIC & SENTIMENT ---
+
+        // Price Increase / Bull Market
+        if (lowerTitle.includes('artış') || lowerTitle.includes('yüksel') || lowerTitle.includes('rekor') || lowerTitle.includes('büyüme') || lowerTitle.includes('zirve')) {
             sentiment = '📈';
-            recommendation = 'Bu olumlu gelişme, mevcut yatırımları değerlendirebilir.';
-        } else if (combinedLower.includes('düşüş') || combinedLower.includes('risk') || combinedLower.includes('concern')) {
+            mainAnalysis = `"${title}" başlığı, emlak piyasasında güçlü bir toparlanma ve büyüme trendine işaret ediyor. Bu durum, mevcut varlık değerlerinin korunması ve artması açısından kritik.`;
+            bulletPoints = [
+                'Talep artışı fiyatları yukarı çekmeye devam edebilir.',
+                'Erken pozisyon alan yatırımcılar için değer kazancı fırsatı.',
+                'Enflasyonist ortamda gayrimenkul güvenli liman olmaya devam ediyor.'
+            ];
+            recommendation = 'Portföy değer artışından faydalanmak için nakit akışı güçlü mülkleri elde tutun.';
+        }
+        // Price Decrease / Corrections
+        else if (lowerTitle.includes('düşüş') || lowerTitle.includes('azal') || lowerTitle.includes('gerile') || lowerTitle.includes('kriz') || lowerTitle.includes('resesyon')) {
             sentiment = '📉';
-            recommendation = 'Dikkatli yaklaşım öneriyoruz, fırsatları değerlendirin.';
-        } else if (combinedLower.includes('kira') || combinedLower.includes('rent')) {
+            mainAnalysis = `Piyasada gözlemlenen bu düşüş eğilimi, aslında nakit gücü yüksek yatırımcılar için "indirimli alım" fırsatı anlamına geliyor.`;
+            bulletPoints = [
+                'Piyasa düzeltmeleri, giriş maliyetlerini düşürür.',
+                'Uzun vadeli yatırımcılar için ideal alım zamanı olabilir.',
+                'Panik satışlarından kaçınıp, temel verilere odaklanılmalı.'
+            ];
+            recommendation = 'Düşük fiyatlı fırsatları değerlendirmek için likiditenizi hazır tutun.';
+        }
+        // Rent / Income
+        else if (lowerTitle.includes('kira') || lowerTitle.includes('getiri') || lowerTitle.includes('gelir') || lowerTitle.includes('rent')) {
             sentiment = '🏠';
-            recommendation = 'Kira odaklı yatırımlar için uygun bir dönem.';
-        } else {
-            recommendation = 'Gelişmeleri izleyip stratejik adımlar atın.';
+            mainAnalysis = `Kira getirileri üzerine odaklanan bu haber, nakit akışı (cash-flow) stratejimizin önemini doğruluyor. Pasif gelir, sürdürülebilir büyümenin anahtarıdır.`;
+            bulletPoints = [
+                'Yüksek kira talebi, mülk değerini ve doluluğu destekler.',
+                'Section 8 gibi garantili kira modelleri riskleri minimize eder.',
+                'Enflasyona karşı kira artışları koruma sağlar.'
+            ];
+            recommendation = 'Yüksek kira çarpanına sahip bölgelere (Midwest gibi) odaklanın.';
+        }
+        // Interest Rates / Finance
+        else if (lowerTitle.includes('faiz') || lowerTitle.includes('mortgage') || lowerTitle.includes('kredi') || lowerTitle.includes('fed') || lowerTitle.includes('banka')) {
+            sentiment = '🏦';
+            mainAnalysis = `Finansman maliyetlerindeki değişimler, yatırımın karlılığını doğrudan etkiler. Bu gelişme, borçlanma stratejilerini gözden geçirmeyi gerektiriyor.`;
+            bulletPoints = [
+                'Faiz oranlarındaki değişim, nakit alımın gücünü artırabilir.',
+                'Düşük faiz dönemleri kaldıraçlı büyüme için fırsattır.',
+                'Refinansman seçenekleri her zaman masada tutulmalı.'
+            ];
+            recommendation = 'Finansman koşullarına göre borç/özkaynak dengenizi optimize edin.';
+        }
+        // Location Specific (USA/Cities)
+        else if (lowerTitle.includes('abd') || lowerTitle.includes('usa') || lowerTitle.includes('şehir') || lowerTitle.includes('bölge') || lowerTitle.includes('eyalet')) {
+            sentiment = '🇺🇸';
+            mainAnalysis = `Lokasyon odaklı bu haber, yatırımda "Nereye?" sorusunun önemini vurguluyor. Her bölgenin kendi mikro-ekonomik dinamikleri vardır.`;
+            bulletPoints = [
+                'Nüfus artışı olan bölgeler her zaman prim yapar.',
+                'İş imkanlarının arttığı şehirler kiracı bulmayı kolaylaştırır.',
+                'Eyalet vergileri ve yasal düzenlemeler karlılığı etkiler.'
+            ];
+            recommendation = 'Büyüme potansiyeli yüksek, göç alan bölgeleri radarınıza alın.';
+        }
+        // Generic / Other
+        else {
+            sentiment = '💡';
+            // Extract meaningful words to sound smart
+            const meaningfulWords = title.split(' ').filter((w: string) => w.length > 4 && !['için', 've', 'veya', 'bir'].includes(w.toLowerCase())).slice(0, 2).join(' ve ');
+
+            mainAnalysis = `"${title}" konusu, global emlak piyasasındaki değişimlerin bir yansımasıdır. ${meaningfulWords ? `Özellikle ${meaningfulWords} konuları` : 'Bu gelişmeler'}, makroekonomik dengeleri etkileyebilir.`;
+            bulletPoints = [
+                'Piyasa duyarlılığını ölçmek için önemli bir gösterge.',
+                'Yatırım kararlarında çeşitlendirmenin önemi artıyor.',
+                'Veriye dayalı stratejiler her zaman kazandırır.'
+            ];
+            recommendation = 'Gelişmeleri yakından izleyerek proaktif stratejiler geliştirin.';
         }
 
-        return `${sentiment} "${title}" başlıklı bu haber hakkında değerlendirmemiz:
-
-${pointsList}
-
-💡 ${recommendation}
-
-Pasiflow ekibi olarak, bu tür piyasa gelişmelerini müşterilerimiz adına sürekli analiz ediyoruz.`;
+        return `${sentiment} Pasiflow Analizi:\n\n${mainAnalysis}\n\n${bulletPoints.map(p => '• ' + p).join('\n')}\n\n🎯 Tavsiye: ${recommendation}`;
     };
 
     const pasiflowAnalysis = generateAnalysis();
