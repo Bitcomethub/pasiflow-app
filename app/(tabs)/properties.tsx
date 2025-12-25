@@ -84,6 +84,8 @@ export default function PropertiesScreen() {
     // Pulse animation for Hot Opportunities section
     const pulseAnim = React.useRef(new Animated.Value(1)).current;
     const glowAnim = React.useRef(new Animated.Value(0.5)).current;
+    const cardScaleAnim = React.useRef(new Animated.Value(1)).current;
+    const cardGlowAnim = React.useRef(new Animated.Value(0)).current;
 
     // Run animations every time this tab is focused
     useFocusEffect(
@@ -91,6 +93,8 @@ export default function PropertiesScreen() {
             // Reset animation values
             pulseAnim.setValue(1);
             glowAnim.setValue(0.5);
+            cardScaleAnim.setValue(1);
+            cardGlowAnim.setValue(0);
 
             // Subtle pulse animation for the flame icon
             const pulseAnimation = Animated.loop(
@@ -109,7 +113,7 @@ export default function PropertiesScreen() {
             );
             pulseAnimation.start();
 
-            // Glow animation for the section title
+            // Glow animation for the section title (keep but make more subtle)
             const glowAnimation = Animated.loop(
                 Animated.sequence([
                     Animated.timing(glowAnim, {
@@ -118,7 +122,7 @@ export default function PropertiesScreen() {
                         useNativeDriver: true,
                     }),
                     Animated.timing(glowAnim, {
-                        toValue: 0.5,
+                        toValue: 0.7,
                         duration: 1500,
                         useNativeDriver: true,
                     }),
@@ -126,10 +130,46 @@ export default function PropertiesScreen() {
             );
             glowAnimation.start();
 
+            // Card subtle breathe animation
+            const cardAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(cardScaleAnim, {
+                        toValue: 1.02,
+                        duration: 1200,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(cardScaleAnim, {
+                        toValue: 1,
+                        duration: 1200,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            cardAnimation.start();
+
+            // Card border glow animation
+            const cardGlowAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(cardGlowAnim, {
+                        toValue: 1,
+                        duration: 2000,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(cardGlowAnim, {
+                        toValue: 0,
+                        duration: 2000,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            cardGlowAnimation.start();
+
             // Cleanup: stop animations when leaving the tab
             return () => {
                 pulseAnimation.stop();
                 glowAnimation.stop();
+                cardAnimation.stop();
+                cardGlowAnimation.stop();
             };
         }, [])
     );
@@ -245,31 +285,47 @@ export default function PropertiesScreen() {
                                     <Text style={styles.hotSubtitle}>Özel yatırım fırsatları</Text>
                                 </View>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.xl }}>
-                                    {HOT_OPPORTUNITIES.map((opportunity) => (
-                                        <TouchableOpacity
+                                    {HOT_OPPORTUNITIES.map((opportunity, index) => (
+                                        <Animated.View
                                             key={opportunity.id}
-                                            style={styles.hotCard}
-                                            activeOpacity={0.8}
-                                            onPress={() => router.push(`/property/${opportunity.id}`)}
+                                            style={{
+                                                transform: [{ scale: cardScaleAnim }],
+                                                opacity: Animated.add(0.85, Animated.multiply(cardGlowAnim, 0.15)),
+                                            }}
                                         >
-                                            <Image source={{ uri: opportunity.image }} style={styles.hotImage} />
-                                            <LinearGradient
-                                                colors={['transparent', 'rgba(0,0,0,0.85)']}
-                                                style={styles.hotGradient}
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.hotCard,
+                                                    {
+                                                        shadowColor: colors.warning,
+                                                        shadowOffset: { width: 0, height: 4 },
+                                                        shadowOpacity: 0.3,
+                                                        shadowRadius: 8,
+                                                        elevation: 5,
+                                                    }
+                                                ]}
+                                                activeOpacity={0.8}
+                                                onPress={() => router.push(`/property/${opportunity.id}`)}
                                             >
-                                                <View style={styles.hotTag}>
-                                                    <Text style={styles.hotTagText}>{opportunity.tag}</Text>
-                                                </View>
-                                                <Text style={styles.hotCardTitle}>{opportunity.title}</Text>
-                                                <Text style={styles.hotLocation}>{opportunity.location}</Text>
-                                                <View style={styles.hotStats}>
-                                                    <Text style={styles.hotPrice}>{opportunity.price}</Text>
-                                                    <View style={styles.hotRoiBadge}>
-                                                        <Text style={styles.hotRoiText}>{opportunity.roi} ROI</Text>
+                                                <Image source={{ uri: opportunity.image }} style={styles.hotImage} />
+                                                <LinearGradient
+                                                    colors={['transparent', 'rgba(0,0,0,0.85)']}
+                                                    style={styles.hotGradient}
+                                                >
+                                                    <View style={styles.hotTag}>
+                                                        <Text style={styles.hotTagText}>{opportunity.tag}</Text>
                                                     </View>
-                                                </View>
-                                            </LinearGradient>
-                                        </TouchableOpacity>
+                                                    <Text style={styles.hotCardTitle}>{opportunity.title}</Text>
+                                                    <Text style={styles.hotLocation}>{opportunity.location}</Text>
+                                                    <View style={styles.hotStats}>
+                                                        <Text style={styles.hotPrice}>{opportunity.price}</Text>
+                                                        <View style={styles.hotRoiBadge}>
+                                                            <Text style={styles.hotRoiText}>{opportunity.roi} ROI</Text>
+                                                        </View>
+                                                    </View>
+                                                </LinearGradient>
+                                            </TouchableOpacity>
+                                        </Animated.View>
                                     ))}
                                 </ScrollView>
                             </View>
