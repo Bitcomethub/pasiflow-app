@@ -57,15 +57,15 @@ export default function LoginScreen() {
         >
             <SafeAreaView style={styles.safeArea}>
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1 }}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
                 >
                     <ScrollView
-                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50, paddingTop: 60 }}
-                        keyboardShouldPersistTaps="always"
+                        contentContainerStyle={styles.scrollContent}
+                        keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
-                        bounces={false}
+                        bounces={true}
                     >
                         <View style={styles.content}>
                             {/* Header */}
@@ -148,6 +148,11 @@ const styles = StyleSheet.create({
     },
     safeArea: {
         flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingVertical: 40,
     },
     keyboardView: {
         flex: 1,
