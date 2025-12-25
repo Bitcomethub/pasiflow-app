@@ -119,21 +119,17 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
                         {/* Content */}
                         <Text style={styles.content}>{fullContent}</Text>
 
-                        {/* Source Link Button */}
-                        <TouchableOpacity
-                            style={styles.sourceButton}
-                            onPress={handleOpenSource}
-                        >
-                            <LinearGradient
-                                colors={[colors.accent.gradientStart, colors.accent.gradientEnd]}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.sourceButtonGradient}
+                        {/* Source Link - Small and subtle */}
+                        <View style={styles.sourceRow}>
+                            <Text style={styles.sourceInfo}>Kaynak: {news.source}</Text>
+                            <TouchableOpacity
+                                style={styles.sourceLinkButton}
+                                onPress={handleOpenSource}
                             >
-                                <Ionicons name="open-outline" size={18} color={colors.text.primary} />
-                                <Text style={styles.sourceButtonText}>Kaynağa Git</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
+                                <Text style={styles.sourceLinkText}>Kaynağa Git</Text>
+                                <Ionicons name="open-outline" size={12} color={colors.accent.cyan} />
+                            </TouchableOpacity>
+                        </View>
 
                         {/* Bottom Padding */}
                         <View style={{ height: 40 }} />
@@ -238,21 +234,28 @@ const styles = StyleSheet.create({
         lineHeight: 26,
         marginBottom: spacing.xl,
     },
-    sourceButton: {
-        borderRadius: borderRadius.lg,
-        overflow: 'hidden',
-        ...shadows.glow,
-    },
-    sourceButtonGradient: {
+    sourceRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: spacing.sm,
-        paddingVertical: spacing.lg,
+        justifyContent: 'space-between',
+        paddingTop: spacing.lg,
+        borderTopWidth: 1,
+        borderTopColor: colors.border.subtle,
     },
-    sourceButtonText: {
-        color: colors.text.primary,
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.bold as any,
+    sourceInfo: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+    },
+    sourceLinkButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingVertical: spacing.xs,
+        paddingHorizontal: spacing.sm,
+    },
+    sourceLinkText: {
+        fontSize: fontSize.xs,
+        color: colors.accent.cyan,
+        fontWeight: fontWeight.medium as any,
     },
 });
