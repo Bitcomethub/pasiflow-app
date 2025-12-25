@@ -465,6 +465,23 @@ export default function Dashboard() {
                     setSelectedNews(null);
                 }}
             />
+
+            {/* Floating AI Chat Button */}
+            <TouchableOpacity
+                style={styles.floatingChatButton}
+                onPress={() => {
+                    handlePress();
+                    router.push('/chat');
+                }}
+                activeOpacity={0.8}
+            >
+                <LinearGradient
+                    colors={[colors.accent.gradientStart, colors.accent.gradientEnd]}
+                    style={styles.floatingChatGradient}
+                >
+                    <Ionicons name="chatbubble-ellipses" size={26} color="#FFF" />
+                </LinearGradient>
+            </TouchableOpacity>
         </LinearGradient>
     );
 }
@@ -762,5 +779,24 @@ const styles = StyleSheet.create({
     newsLoadingText: {
         fontSize: fontSize.xs,
         color: colors.text.tertiary,
+    },
+    floatingChatButton: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        zIndex: 100,
+        ...shadows.float,
+    },
+    floatingChatGradient: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.accent.gradientStart,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 8,
     },
 });
