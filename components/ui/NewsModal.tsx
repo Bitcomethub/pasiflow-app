@@ -145,6 +145,15 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
                             <Text style={styles.aiContent}>{pasiflowAnalysis}</Text>
                         </View>
 
+                        {/* Source Link - Small at bottom */}
+                        <TouchableOpacity
+                            style={styles.sourceLink}
+                            onPress={handleOpenSource}
+                        >
+                            <Text style={styles.sourceLinkText}>Kaynak: {news.source}</Text>
+                            <Ionicons name="open-outline" size={12} color={colors.text.tertiary} />
+                        </TouchableOpacity>
+
                         {/* Bottom Padding */}
                         <View style={{ height: 40 }} />
                     </ScrollView>
@@ -277,5 +286,17 @@ const styles = StyleSheet.create({
         fontSize: fontSize.sm,
         color: colors.text.secondary,
         lineHeight: 22,
+    },
+    sourceLink: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        marginTop: spacing.xl,
+        paddingVertical: spacing.sm,
+    },
+    sourceLinkText: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
     },
 });
