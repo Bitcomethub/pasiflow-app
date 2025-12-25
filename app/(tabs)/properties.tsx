@@ -286,30 +286,33 @@ export default function PropertiesScreen() {
                                 </View>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.xl }}>
                                     {HOT_OPPORTUNITIES.map((opportunity, index) => (
-                                        <Animated.View
-                                            key={opportunity.id}
-                                            style={{
-                                                transform: [{ scale: cardScaleAnim }],
-                                                opacity: Animated.add(0.85, Animated.multiply(cardGlowAnim, 0.15)),
-                                            }}
-                                        >
-                                            <TouchableOpacity
+                                        <View key={opportunity.id} style={styles.hotCardWrapper}>
+                                            {/* Animated Glow Border */}
+                                            <Animated.View
                                                 style={[
-                                                    styles.hotCard,
+                                                    styles.glowBorder,
                                                     {
-                                                        shadowColor: colors.warning,
-                                                        shadowOffset: { width: 0, height: 4 },
-                                                        shadowOpacity: 0.3,
-                                                        shadowRadius: 8,
-                                                        elevation: 5,
+                                                        opacity: cardGlowAnim,
                                                     }
                                                 ]}
-                                                activeOpacity={0.8}
+                                            />
+                                            <TouchableOpacity
+                                                style={styles.hotCard}
+                                                activeOpacity={0.9}
                                                 onPress={() => router.push(`/property/${opportunity.id}`)}
                                             >
-                                                <Image source={{ uri: opportunity.image }} style={styles.hotImage} />
+                                                <View style={styles.hotImageContainer}>
+                                                    <View style={styles.imagePlaceholder}>
+                                                        <Ionicons name="image-outline" size={30} color={colors.text.tertiary} />
+                                                    </View>
+                                                    <Image
+                                                        source={{ uri: opportunity.image }}
+                                                        style={styles.hotImage}
+                                                        resizeMode="cover"
+                                                    />
+                                                </View>
                                                 <LinearGradient
-                                                    colors={['transparent', 'rgba(0,0,0,0.85)']}
+                                                    colors={['transparent', 'rgba(0,0,0,0.9)']}
                                                     style={styles.hotGradient}
                                                 >
                                                     <View style={styles.hotTag}>
@@ -325,7 +328,7 @@ export default function PropertiesScreen() {
                                                     </View>
                                                 </LinearGradient>
                                             </TouchableOpacity>
-                                        </Animated.View>
+                                        </View>
                                     ))}
                                 </ScrollView>
                             </View>
@@ -524,12 +527,49 @@ const styles = StyleSheet.create({
         height: 260,
         borderRadius: borderRadius.xl,
         overflow: 'hidden',
+        position: 'relative',
+        backgroundColor: colors.background.card,
+    },
+    hotCardWrapper: {
         marginRight: spacing.md,
         position: 'relative',
+    },
+    glowBorder: {
+        position: 'absolute',
+        top: -3,
+        left: -3,
+        right: -3,
+        bottom: -3,
+        borderRadius: borderRadius.xl + 3,
+        borderWidth: 2,
+        borderColor: colors.warning,
+        shadowColor: '#FF6B00',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    hotImageContainer: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: colors.background.subtle,
+    },
+    imagePlaceholder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.background.subtle,
     },
     hotImage: {
         width: '100%',
         height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
     },
     hotGradient: {
         position: 'absolute',
