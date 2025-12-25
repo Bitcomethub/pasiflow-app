@@ -27,9 +27,10 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 router.get('/', async (req, res) => {
     try {
         const now = Date.now();
+        const forceRefresh = req.query.refresh === 'true';
 
-        // Return cached data if still fresh
-        if (newsCache.lastFetched && (now - newsCache.lastFetched) < CACHE_DURATION) {
+        // Return cached data if still fresh (unless refresh is forced)
+        if (!forceRefresh && newsCache.lastFetched && (now - newsCache.lastFetched) < CACHE_DURATION) {
             return res.json({ news: newsCache.data, cached: true });
         }
 
