@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,52 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Card } from '@/components/ui';
 
-// Simple implementation of a slider-like component since we don't have Slider installed
-const CustomSlider = ({ value, onValueChange, min, max, format }: { value: number, onValueChange: (val: number) => void, min: number, max: number, format: (val: number) => string }) => {
-    return (
-        <View style={sliderStyles.container}>
-            <View style={sliderStyles.track}>
-                <View style={[sliderStyles.fill, { width: `${((value - min) / (max - min)) * 100}%` }]} />
-            </View>
-            <View style={sliderStyles.controls}>
-                <TouchableOpacity onPress={() => onValueChange(Math.max(min, value - (max - min) * 0.1))}>
-                    <Ionicons name="remove-circle-outline" size={28} color={colors.text.secondary} />
-                </TouchableOpacity>
-                <Text style={sliderStyles.value}>{format(value)}</Text>
-                <TouchableOpacity onPress={() => onValueChange(Math.min(max, value + (max - min) * 0.1))}>
-                    <Ionicons name="add-circle-outline" size={28} color={colors.accent.cyan} />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-};
 
-const sliderStyles = StyleSheet.create({
-    container: {
-        marginVertical: spacing.md,
-    },
-    track: {
-        height: 4,
-        backgroundColor: colors.background.subtle,
-        borderRadius: 2,
-        marginBottom: spacing.md,
-    },
-    fill: {
-        height: '100%',
-        backgroundColor: colors.accent.cyan,
-        borderRadius: 2,
-    },
-    controls: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    value: {
-        fontSize: fontSize.lg,
-        fontWeight: fontWeight.bold as any,
-        color: colors.text.primary,
-    }
-});
 
 export default function SimulatorScreen() {
     const [investmentAmount, setInvestmentAmount] = useState(50000);
@@ -131,24 +87,32 @@ export default function SimulatorScreen() {
 
                     {/* Inputs */}
                     <Card style={styles.inputCard}>
-                        <Text style={styles.inputLabel}>Yatırım Tutarı</Text>
-                        <CustomSlider
+                        <Text style={styles.inputLabel}>Yatırım Tutarı: ${investmentAmount.toLocaleString()}</Text>
+                        <Slider
+                            style={{ width: '100%', height: 40 }}
+                            minimumValue={1000}
+                            maximumValue={500000}
+                            step={1000}
                             value={investmentAmount}
                             onValueChange={setInvestmentAmount}
-                            min={1000}
-                            max={500000}
-                            format={(val) => `$${val.toLocaleString()}`}
+                            minimumTrackTintColor={colors.accent.cyan}
+                            maximumTrackTintColor={colors.background.subtle}
+                            thumbTintColor={colors.accent.cyan}
                         />
 
                         <View style={styles.divider} />
 
-                        <Text style={styles.inputLabel}>Vade (Yıl)</Text>
-                        <CustomSlider
+                        <Text style={styles.inputLabel}>Vade: {Math.round(years)} Yıl</Text>
+                        <Slider
+                            style={{ width: '100%', height: 40 }}
+                            minimumValue={1}
+                            maximumValue={30}
+                            step={1}
                             value={years}
                             onValueChange={setYears}
-                            min={1}
-                            max={30}
-                            format={(val) => `${Math.round(val)} Yıl`}
+                            minimumTrackTintColor={colors.accent.cyan}
+                            maximumTrackTintColor={colors.background.subtle}
+                            thumbTintColor={colors.accent.cyan}
                         />
                     </Card>
 
@@ -176,6 +140,101 @@ export default function SimulatorScreen() {
                             </View>
                         </View>
                     </LinearGradient>
+
+                    {/* Detailed Breakdown Section */}
+                    <Card style={styles.detailCard}>
+                        <View style={styles.detailHeader}>
+                            <Ionicons name="analytics" size={20} color={colors.accent.cyan} />
+                            <Text style={styles.detailTitle}>Detaylı Analiz</Text>
+                        </View>
+
+                        {/* Expense Breakdown */}
+                        <View style={styles.expenseSection}>
+                            <Text style={styles.expenseSectionTitle}>Tahmini Giderler (Yıllık)</Text>
+                            <View style={styles.expenseRow}>
+                                <Text style={styles.expenseLabel}>Sigorta</Text>
+                                <Text style={styles.expenseValue}>-${Math.round(investmentAmount * 0.005).toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.expenseRow}>
+                                <Text style={styles.expenseLabel}>Vergi</Text>
+                                <Text style={styles.expenseValue}>-${Math.round(investmentAmount * 0.012).toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.expenseRow}>
+                                <Text style={styles.expenseLabel}>Bakım/Onarım</Text>
+                                <Text style={styles.expenseValue}>-${Math.round(investmentAmount * 0.01).toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.expenseRow}>
+                                <Text style={styles.expenseLabel}>Yönetim</Text>
+                                <Text style={styles.expenseValue}>-${Math.round(investmentAmount * (CITIES.find(c => c.name === selectedCity)?.rentalYield || 6) / 100 * 0.08).toLocaleString()}</Text>
+                            </View>
+                            <View style={[styles.expenseRow, styles.expenseTotal]}>
+                                <Text style={styles.expenseTotalLabel}>Net Yıllık Gelir</Text>
+                                <Text style={styles.expenseTotalValue}>
+                                    ${Math.round(
+                                        (investmentAmount * (CITIES.find(c => c.name === selectedCity)?.rentalYield || 6) / 100) -
+                                        (investmentAmount * 0.027) -
+                                        (investmentAmount * (CITIES.find(c => c.name === selectedCity)?.rentalYield || 6) / 100 * 0.08)
+                                    ).toLocaleString()}
+                                </Text>
+                            </View>
+                        </View>
+                    </Card>
+
+                    {/* Yearly Projection Table */}
+                    <Card style={styles.detailCard}>
+                        <View style={styles.detailHeader}>
+                            <Ionicons name="calendar" size={20} color={colors.accent.purple} />
+                            <Text style={styles.detailTitle}>Yıllık Projeksiyon</Text>
+                        </View>
+
+                        <View style={styles.tableHeader}>
+                            <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}>Yıl</Text>
+                            <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>Değer</Text>
+                            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Kira</Text>
+                            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Toplam</Text>
+                        </View>
+
+                        {Array.from({ length: Math.min(years, 10) }, (_, i) => {
+                            const year = i + 1;
+                            const cityData = CITIES.find(c => c.name === selectedCity) || CITIES[0];
+                            const valueAtYear = investmentAmount * Math.pow((1 + cityData.appreciation / 100), year);
+                            const rentAtYear = investmentAmount * (cityData.rentalYield / 100) * year;
+                            const totalAtYear = (valueAtYear - investmentAmount) + rentAtYear;
+
+                            return (
+                                <View key={year} style={[styles.tableRow, year % 2 === 0 && styles.tableRowAlt]}>
+                                    <Text style={[styles.tableCell, { flex: 0.8 }]}>{year}</Text>
+                                    <Text style={[styles.tableCell, { flex: 1.2 }]}>${Math.round(valueAtYear).toLocaleString()}</Text>
+                                    <Text style={[styles.tableCell, { flex: 1, color: colors.success }]}>+${Math.round(rentAtYear).toLocaleString()}</Text>
+                                    <Text style={[styles.tableCell, { flex: 1, color: colors.accent.cyan }]}>+${Math.round(totalAtYear).toLocaleString()}</Text>
+                                </View>
+                            );
+                        })}
+
+                        {years > 10 && (
+                            <Text style={styles.tableNote}>...ve {years - 10} yıl daha</Text>
+                        )}
+                    </Card>
+
+                    {/* Investment Tips */}
+                    <Card style={styles.detailCard}>
+                        <View style={styles.detailHeader}>
+                            <Ionicons name="bulb" size={20} color={colors.warning} />
+                            <Text style={styles.detailTitle}>Yatırım İpuçları</Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                            <Text style={styles.tipText}>Detroit bölgesi yüksek kira getirisi sunar, ancak bakım maliyetleri daha yüksek olabilir.</Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                            <Text style={styles.tipText}>Uzun vadeli yatırımlarda bileşik getiri etkisi artış gösterir.</Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                            <Text style={styles.tipText}>Section 8 garantili kiracılar daha düşük risk sunar.</Text>
+                        </View>
+                    </Card>
                 </ScrollView>
             </SafeAreaView>
         </LinearGradient>
@@ -320,5 +379,108 @@ const styles = StyleSheet.create({
         fontSize: fontSize.base,
         color: colors.text.primary,
         fontWeight: fontWeight.bold as any,
+    },
+    // New styles for detailed breakdown
+    detailCard: {
+        marginHorizontal: spacing.xl,
+        marginTop: spacing.lg,
+        padding: spacing.lg,
+        backgroundColor: colors.background.card,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+    },
+    detailHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        marginBottom: spacing.lg,
+    },
+    detailTitle: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    },
+    expenseSection: {
+        gap: spacing.sm,
+    },
+    expenseSectionTitle: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        marginBottom: spacing.sm,
+    },
+    expenseRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: spacing.xs,
+    },
+    expenseLabel: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+    },
+    expenseValue: {
+        fontSize: fontSize.sm,
+        color: colors.error,
+        fontWeight: fontWeight.medium as any,
+    },
+    expenseTotal: {
+        borderTopWidth: 1,
+        borderTopColor: colors.border.subtle,
+        marginTop: spacing.sm,
+        paddingTop: spacing.md,
+    },
+    expenseTotalLabel: {
+        fontSize: fontSize.base,
+        color: colors.text.primary,
+        fontWeight: fontWeight.bold as any,
+    },
+    expenseTotalValue: {
+        fontSize: fontSize.base,
+        color: colors.success,
+        fontWeight: fontWeight.bold as any,
+    },
+    tableHeader: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        padding: spacing.sm,
+        borderRadius: borderRadius.sm,
+        marginBottom: spacing.xs,
+    },
+    tableHeaderCell: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+        fontWeight: fontWeight.bold as any,
+        textTransform: 'uppercase',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.sm,
+    },
+    tableRowAlt: {
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        borderRadius: borderRadius.sm,
+    },
+    tableCell: {
+        fontSize: fontSize.sm,
+        color: colors.text.primary,
+    },
+    tableNote: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+        textAlign: 'center',
+        marginTop: spacing.sm,
+        fontStyle: 'italic',
+    },
+    tipItem: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    tipText: {
+        flex: 1,
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        lineHeight: 20,
     },
 });

@@ -1,35 +1,124 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows, propertyStatus } from '@/lib/theme';
 import { Card, Badge, StatBlock } from '@/components/ui';
 
 // Mock Data
+// Mock Data with Real Cities
+// Mock Data with Real Cities
 const PROPERTIES = [
     {
         id: '1',
-        title: 'Modern Apartment in Miami',
-        location: 'Miami, FL',
+        title: 'Solid Brick Colonial',
+        location: 'Cleveland Heights, OH',
         status: 'occupied',
-        purchasePrice: '$450,000',
-        monthlyRent: '$3,200',
-        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=60',
+        purchasePrice: '$115,000',
+        monthlyRent: '$1,250',
+        // Classic brick house, solid investment feel
+        image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=80',
         nextPaymentDate: '15 gün kaldı',
     },
     {
         id: '2',
-        title: 'Downtown Loft',
-        location: 'Austin, TX',
+        title: 'Historic Detroit Single Family',
+        location: 'Detroit, MI',
+        status: 'occupied',
+        purchasePrice: '$85,000',
+        monthlyRent: '$1,100',
+        // Detroit style older home, porch, character - FIXED URL
+        image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&auto=format&fit=crop&q=80',
+        nextPaymentDate: '2 gün kaldı',
+    },
+    {
+        id: '3',
+        title: 'Renovated Craftsman',
+        location: 'Memphis, TN',
         status: 'vacancy',
-        purchasePrice: '$320,000',
-        monthlyRent: '$2,100',
-        image: 'https://images.unsplash.com/photo-1512918760383-eda2723ad6e5?w=800&auto=format&fit=crop&q=60',
+        purchasePrice: '$135,000',
+        monthlyRent: '$1,400',
+        // Craftsman style, sturdy
+        image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80',
         nextPaymentDate: '-',
     },
 ];
 
+// Hot Investment Opportunities (Mock Data)
+const HOT_OPPORTUNITIES = [
+    {
+        id: 'hot-1',
+        title: '🔥 Detroit Investment Hub',
+        location: 'Detroit, MI',
+        price: '$55,000',
+        roi: '%16.5',
+        // Raw, potential, brick structure
+        image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80',
+        tag: 'Yüksek Potansiyel',
+    },
+    {
+        id: 'hot-2',
+        title: '💰 Turnkey 2-Unit',
+        location: 'St. Louis, MO',
+        price: '$89,000',
+        roi: '%13.8',
+        // Multi-unit brick building
+        image: 'https://images.unsplash.com/photo-1574958269340-fa927503f3dd?w=800&auto=format&fit=crop&q=80',
+        tag: 'Nakit Akışı Kralı',
+    },
+    {
+        id: 'hot-3',
+        title: '⭐ Indianapolis Gem',
+        location: 'Indianapolis, IN',
+        price: '$125,000',
+        roi: '%10.5',
+        // Siding/traditional midwest home
+        image: 'https://images.unsplash.com/photo-1625602812206-5ec545ca1231?w=800&auto=format&fit=crop&q=80',
+        tag: 'Premium',
+    },
+];
+
 export default function PropertiesScreen() {
+    // Pulse animation for Hot Opportunities section
+    const pulseAnim = React.useRef(new Animated.Value(1)).current;
+    const glowAnim = React.useRef(new Animated.Value(0.5)).current;
+
+    React.useEffect(() => {
+        // Subtle pulse animation for the flame icon
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.15,
+                    duration: 800,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 800,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+
+        // Glow animation for the section title
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(glowAnim, {
+                    toValue: 1,
+                    duration: 1500,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(glowAnim, {
+                    toValue: 0.5,
+                    duration: 1500,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+    }, []);
+
     const renderProperty = ({ item }: { item: any }) => (
         <Card style={styles.propertyCard}>
             <View style={styles.imageContainer}>
@@ -72,7 +161,11 @@ export default function PropertiesScreen() {
                         <Ionicons name="time-outline" size={16} color={colors.text.tertiary} />
                         <Text style={styles.paymentText}>Ödeme: {item.nextPaymentDate}</Text>
                     </View>
-                    <TouchableOpacity style={styles.detailsButton}>
+                    <TouchableOpacity
+                        style={styles.detailsButton}
+                        onPress={() => router.push(`/property/${item.id}`)}
+                        activeOpacity={0.8}
+                    >
                         <Text style={styles.detailsButtonText}>Detaylar</Text>
                         <Ionicons name="arrow-forward" size={16} color={colors.text.primary} />
                     </TouchableOpacity>
@@ -83,44 +176,92 @@ export default function PropertiesScreen() {
 
     return (
         <LinearGradient
-            colors={[colors.background.main, '#0F172A']}
+            colors={[colors.background.main, '#1F2937']}
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>Mülklerim</Text>
-                    <TouchableOpacity style={styles.addButton}>
-                        <Ionicons name="add" size={24} color={colors.text.primary} />
-                    </TouchableOpacity>
-                </View>
-
-                {/* Summary Cards */}
-                <View style={styles.summaryContainer}>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.summaryScroll}>
-                        <Card style={styles.summaryCard}>
-                            <Ionicons name="business" size={24} color={colors.accent.cyan} style={styles.summaryIcon} />
-                            <Text style={styles.summaryValue}>3</Text>
-                            <Text style={styles.summaryLabel}>Toplam Mülk</Text>
-                        </Card>
-                        <Card style={styles.summaryCard}>
-                            <Ionicons name="cash" size={24} color={colors.success} style={styles.summaryIcon} />
-                            <Text style={styles.summaryValue}>$89k</Text>
-                            <Text style={styles.summaryLabel}>Yıllık Gelir</Text>
-                        </Card>
-                        <Card style={styles.summaryCard}>
-                            <Ionicons name="trending-up" size={24} color={colors.accent.purple} style={styles.summaryIcon} />
-                            <Text style={styles.summaryValue}>%12</Text>
-                            <Text style={styles.summaryLabel}>Değer Artışı</Text>
-                        </Card>
-                    </ScrollView>
-                </View>
-
                 <FlatList
                     data={PROPERTIES}
                     renderItem={renderProperty}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={() => (
+                        <>
+                            <View style={styles.header}>
+                                <Text style={styles.title}>Mülklerim</Text>
+                                <TouchableOpacity style={styles.addButton}>
+                                    <Ionicons name="add" size={24} color={colors.text.primary} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Summary Cards */}
+                            <View style={styles.summaryContainer}>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.summaryScroll}>
+                                    <Card style={styles.summaryCard}>
+                                        <Ionicons name="business" size={24} color={colors.accent.cyan} style={styles.summaryIcon} />
+                                        <Text style={styles.summaryValue}>3</Text>
+                                        <Text style={styles.summaryLabel}>Toplam Mülk</Text>
+                                    </Card>
+                                    <Card style={styles.summaryCard}>
+                                        <Ionicons name="cash" size={24} color={colors.success} style={styles.summaryIcon} />
+                                        <Text style={styles.summaryValue}>$89k</Text>
+                                        <Text style={styles.summaryLabel}>Yıllık Gelir</Text>
+                                    </Card>
+                                    <Card style={styles.summaryCard}>
+                                        <Ionicons name="trending-up" size={24} color={colors.accent.purple} style={styles.summaryIcon} />
+                                        <Text style={styles.summaryValue}>%12</Text>
+                                        <Text style={styles.summaryLabel}>Değer Artışı</Text>
+                                    </Card>
+                                </ScrollView>
+                            </View>
+
+                            {/* Hot Opportunities Section */}
+                            <View style={styles.hotSection}>
+                                <View style={styles.hotHeader}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                                            <Ionicons name="flame" size={22} color={colors.warning} />
+                                        </Animated.View>
+                                        <Animated.Text style={[styles.hotTitle, { opacity: glowAnim }]}>
+                                            Sıcak Fırsatlar
+                                        </Animated.Text>
+                                    </View>
+                                    <Text style={styles.hotSubtitle}>Özel yatırım fırsatları</Text>
+                                </View>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.xl }}>
+                                    {HOT_OPPORTUNITIES.map((opportunity) => (
+                                        <TouchableOpacity
+                                            key={opportunity.id}
+                                            style={styles.hotCard}
+                                            activeOpacity={0.8}
+                                            onPress={() => router.push(`/property/${opportunity.id}`)}
+                                        >
+                                            <Image source={{ uri: opportunity.image }} style={styles.hotImage} />
+                                            <LinearGradient
+                                                colors={['transparent', 'rgba(0,0,0,0.85)']}
+                                                style={styles.hotGradient}
+                                            >
+                                                <View style={styles.hotTag}>
+                                                    <Text style={styles.hotTagText}>{opportunity.tag}</Text>
+                                                </View>
+                                                <Text style={styles.hotCardTitle}>{opportunity.title}</Text>
+                                                <Text style={styles.hotLocation}>{opportunity.location}</Text>
+                                                <View style={styles.hotStats}>
+                                                    <Text style={styles.hotPrice}>{opportunity.price}</Text>
+                                                    <View style={styles.hotRoiBadge}>
+                                                        <Text style={styles.hotRoiText}>{opportunity.roi} ROI</Text>
+                                                    </View>
+                                                </View>
+                                            </LinearGradient>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+
+                            <Text style={styles.myPropertiesTitle}>Mülklerim</Text>
+                        </>
+                    )}
                 />
             </SafeAreaView>
         </LinearGradient>
@@ -184,7 +325,7 @@ const styles = StyleSheet.create({
         color: colors.text.secondary,
     },
     listContent: {
-        paddingHorizontal: spacing.xl,
+        paddingHorizontal: spacing.lg, // Reduced from xl to better center content
         paddingBottom: 100,
         gap: spacing.lg,
     },
@@ -288,5 +429,93 @@ const styles = StyleSheet.create({
         fontSize: fontSize.sm,
         fontWeight: fontWeight.semibold as any,
         color: colors.text.primary,
+    },
+    // Hot Opportunities Styles
+    hotSection: {
+        marginBottom: spacing.xl,
+    },
+    hotHeader: {
+        paddingHorizontal: spacing.xl,
+        marginBottom: spacing.md,
+    },
+    hotTitle: {
+        fontSize: fontSize.xl,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    },
+    hotSubtitle: {
+        fontSize: fontSize.sm,
+        color: colors.text.tertiary,
+        marginTop: 2,
+    },
+    hotCard: {
+        width: 200,
+        height: 260,
+        borderRadius: borderRadius.xl,
+        overflow: 'hidden',
+        marginRight: spacing.md,
+        position: 'relative',
+    },
+    hotImage: {
+        width: '100%',
+        height: '100%',
+    },
+    hotGradient: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: spacing.md,
+    },
+    hotTag: {
+        alignSelf: 'flex-start',
+        backgroundColor: colors.warning,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: borderRadius.sm,
+        marginBottom: spacing.sm,
+    },
+    hotTagText: {
+        fontSize: fontSize.xs,
+        fontWeight: fontWeight.bold as any,
+        color: colors.background.main,
+    },
+    hotCardTitle: {
+        fontSize: fontSize.base,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    },
+    hotLocation: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        marginBottom: spacing.sm,
+    },
+    hotStats: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    hotPrice: {
+        fontSize: fontSize.lg,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+    },
+    hotRoiBadge: {
+        backgroundColor: 'rgba(52, 211, 153, 0.2)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: borderRadius.sm,
+    },
+    hotRoiText: {
+        fontSize: fontSize.xs,
+        fontWeight: fontWeight.bold as any,
+        color: colors.success,
+    },
+    myPropertiesTitle: {
+        fontSize: fontSize.xl,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+        paddingHorizontal: spacing.xl,
+        marginBottom: spacing.md,
     },
 });

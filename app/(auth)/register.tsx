@@ -23,6 +23,12 @@ export default function Register() {
                             <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
                         </TouchableOpacity>
 
+                        <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+                            <Image
+                                source={require('../../assets/images/pasiflow-logo.png')}
+                                style={{ width: 200, height: 60, resizeMode: 'contain' }}
+                            />
+                        </View>
                         <Text style={styles.title}>Hesap Oluştur</Text>
                         <Text style={styles.subtitle}>Geleceğin yatırım dünyasına adım atın.</Text>
 

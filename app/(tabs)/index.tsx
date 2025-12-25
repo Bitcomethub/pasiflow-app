@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated, Easing } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated, Easing, Image, Linking, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,12 +7,77 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Card } from '@/components/ui';
+import { fetchNews, NewsItem } from '@/lib/api';
+
+// Fallback mock news for when API is unavailable
+const FALLBACK_NEWS = [
+    {
+        id: '1',
+        title: 'ABD Konut Fiyatları 2025\'te Artmaya Devam Edecek',
+        source: 'Redfin Blog',
+        pubDate: new Date().toISOString(),
+        snippet: 'Uzmanlar 2025 yılında konut fiyatlarının artış trendini sürdüreceğini öngörüyor.',
+        image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400',
+        link: 'https://www.redfin.com/blog/'
+    },
+    {
+        id: '2',
+        title: 'Kira Getirisi En Yüksek 10 ABD Şehri',
+        source: 'HousingWire',
+        pubDate: new Date(Date.now() - 3600000).toISOString(),
+        snippet: 'Yatırımcılar için en karlı bölgelerin listesi yayınlandı.',
+        image: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=400',
+        link: 'https://www.housingwire.com/'
+    },
+    {
+        id: '3',
+        title: 'Yatırımcılar İçin En İyi Bölgeler: 2025 Rehberi',
+        source: 'Realtor.com',
+        pubDate: new Date(Date.now() - 86400000).toISOString(),
+        snippet: 'Bu yıl yatırım yapılabilecek en iyi bölgelerin kapsamlı analizi.',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
+        link: 'https://www.realtor.com/news/'
+    },
+];
 
 export default function Dashboard() {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(50)).current;
+    const [news, setNews] = useState<NewsItem[]>([]);
+    const [newsLoading, setNewsLoading] = useState(true);
+
+    // Animated counter states for engaging number reveal
+    const [displayPortfolio, setDisplayPortfolio] = useState(0);
+    const [displayRent, setDisplayRent] = useState(0);
+    const [displayROI, setDisplayROI] = useState(0);
+    const [displayTrend, setDisplayTrend] = useState(0);
+
+    // Target values
+    const TARGET_PORTFOLIO = 345000;
+    const TARGET_RENT = 2850;
+    const TARGET_ROI = 8.4;
+    const TARGET_TREND = 12.5;
 
     useEffect(() => {
+        // Fetch real news from backend
+        const loadNews = async () => {
+            try {
+                const fetchedNews = await fetchNews();
+                if (fetchedNews.length > 0) {
+                    setNews(fetchedNews);
+                } else {
+                    setNews(FALLBACK_NEWS as NewsItem[]);
+                }
+            } catch (error) {
+                console.log('Using fallback news');
+                setNews(FALLBACK_NEWS as NewsItem[]);
+            } finally {
+                setNewsLoading(false);
+            }
+        };
+        loadNews();
+
+        // Animation
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -27,6 +92,41 @@ export default function Dashboard() {
                 easing: Easing.out(Easing.back(1.5)), // Cosmic bounce effect
             }),
         ]).start();
+
+        // Count-up animation for numbers (user engagement)
+        const ANIMATION_DURATION = 1500; // 1.5 seconds
+        const FRAME_RATE = 60;
+        const totalFrames = (ANIMATION_DURATION / 1000) * FRAME_RATE;
+        let currentFrame = 0;
+
+        const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4); // Smooth deceleration
+
+        const animateNumbers = () => {
+            currentFrame++;
+            const progress = easeOutQuart(currentFrame / totalFrames);
+
+            setDisplayPortfolio(Math.floor(TARGET_PORTFOLIO * progress));
+            setDisplayRent(Math.floor(TARGET_RENT * progress));
+            setDisplayROI(parseFloat((TARGET_ROI * progress).toFixed(1)));
+            setDisplayTrend(parseFloat((TARGET_TREND * progress).toFixed(1)));
+
+            if (currentFrame < totalFrames) {
+                requestAnimationFrame(animateNumbers);
+            } else {
+                // Ensure final values are exact
+                setDisplayPortfolio(TARGET_PORTFOLIO);
+                setDisplayRent(TARGET_RENT);
+                setDisplayROI(TARGET_ROI);
+                setDisplayTrend(TARGET_TREND);
+            }
+        };
+
+        // Start number animation after a slight delay for dramatic effect
+        const timer = setTimeout(() => {
+            requestAnimationFrame(animateNumbers);
+        }, 400);
+
+        return () => clearTimeout(timer);
     }, []);
 
     const handlePress = () => {
@@ -35,9 +135,24 @@ export default function Dashboard() {
         }
     };
 
+    // Format news date relative to now
+    const formatNewsDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffHours < 1) return 'Az önce';
+        if (diffHours < 24) return `${diffHours} saat önce`;
+        if (diffDays === 1) return 'Dün';
+        if (diffDays < 7) return `${diffDays} gün önce`;
+        return date.toLocaleDateString('tr-TR');
+    };
+
     return (
         <LinearGradient
-            colors={[colors.background.main, '#0F172A']} // Deep Cosmos Gradient
+            colors={[colors.background.main, '#1F2937']} // Lighter Deep Cosmos Gradient
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.container}
@@ -46,11 +161,30 @@ export default function Dashboard() {
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                     {/* Header Section */}
                     <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-                        <View>
-                            <Text style={styles.greeting}>Tekrar Hoş Geldiniz,</Text>
-                            <Text style={styles.username}>Demo Kullanıcı</Text>
+                        <View style={{ alignItems: 'flex-start', marginLeft: -20 }}>
+                            <View style={{ width: 200, height: 60, overflow: 'hidden' }}>
+                                <Image
+                                    source={require('../../assets/images/pasiflow-logo.png')}
+                                    style={{
+                                        width: 200,
+                                        height: 200, // Square aspect (1:1) - same as source
+                                        resizeMode: 'contain',
+                                        marginTop: -70, // Shift image up to show center portion
+                                        alignSelf: 'flex-start',
+                                        marginLeft: 0
+                                    }}
+                                />
+                            </View>
+                            <Text style={[styles.greeting, { marginLeft: 20 }]}>Tekrar Hoş Geldiniz</Text>
                         </View>
-                        <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/more')}>
+                        <TouchableOpacity
+                            style={styles.profileButton}
+                            onPress={() => {
+                                console.log('Navigating to /more');
+                                handlePress(); // Add haptic
+                                router.push('/more');
+                            }}
+                        >
                             <Ionicons name="settings-outline" size={24} color={colors.text.primary} />
                         </TouchableOpacity>
                     </Animated.View>
@@ -67,20 +201,20 @@ export default function Dashboard() {
                                 <Text style={styles.portfolioLabel}>TOPLAM PORTFÖY</Text>
                                 <View style={styles.trendContainer}>
                                     <Ionicons name="trending-up" size={16} color={colors.text.primary} />
-                                    <Text style={styles.trendText}>+12.5%</Text>
+                                    <Text style={styles.trendText}>+{displayTrend}%</Text>
                                 </View>
                             </View>
-                            <Text style={styles.portfolioValue}>$345,000</Text>
+                            <Text style={styles.portfolioValue}>${displayPortfolio.toLocaleString()}</Text>
 
                             <View style={styles.statsRow}>
                                 <View style={styles.statItem}>
                                     <Text style={styles.statLabel}>Aylık Kira</Text>
-                                    <Text style={styles.statValue}>$2,850</Text>
+                                    <Text style={styles.statValue}>${displayRent.toLocaleString()}</Text>
                                 </View>
                                 <View style={styles.statDivider} />
                                 <View style={styles.statItem}>
                                     <Text style={styles.statLabel}>Net ROI</Text>
-                                    <Text style={styles.statValue}>8.4%</Text>
+                                    <Text style={styles.statValue}>{displayROI}%</Text>
                                 </View>
                                 <View style={styles.statDivider} />
                                 <View style={styles.statItem}>
@@ -99,15 +233,22 @@ export default function Dashboard() {
                         <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.actionsScroll}>
                             {[
-                                { icon: 'add-circle', label: 'Yatırım Yap', color: colors.accent.cyan },
-                                { icon: 'calculator', label: 'Hesapla', color: colors.accent.purple },
-                                { icon: 'document-text', label: 'Raporlar', color: colors.primary[400] },
-                                { icon: 'chatbubble-ellipses', label: 'Destek', color: colors.accent.gradientStart },
+                                { icon: 'flame', label: 'Aktif Fırsatlar', color: colors.warning, route: '/properties' },
+                                { icon: 'add-circle', label: 'Yatırım Yap', color: colors.accent.cyan, route: '/properties' },
+                                { icon: 'calculator', label: 'Hesapla', color: colors.accent.purple, route: '/simulator' },
+                                { icon: 'document-text', label: 'Raporlar', color: colors.primary[400], route: '/documents' },
+                                { icon: 'chatbubble-ellipses', label: 'Destek', color: colors.accent.gradientStart, route: '/more/contact' },
                             ].map((action, index) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={styles.actionCard}
-                                    onPress={handlePress}
+                                    onPress={() => {
+                                        handlePress();
+                                        if (action.route) {
+                                            router.push(action.route as any);
+                                        }
+                                    }}
+                                    activeOpacity={0.7}
                                 >
                                     <View style={[styles.actionIcon, { borderColor: `${action.color}40`, backgroundColor: `${action.color}10` }]}>
                                         <Ionicons name={action.icon as any} size={24} color={action.color} />
@@ -138,6 +279,49 @@ export default function Dashboard() {
                                 <Text style={styles.statusLabel}>Gecikmiş</Text>
                             </Card>
                         </View>
+                    </Animated.View>
+
+                    {/* Real Estate News Section */}
+                    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: Animated.add(slideAnim, 70) }] }}>
+                        <View style={styles.newsHeader}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Ionicons name="newspaper" size={20} color={colors.accent.cyan} />
+                                <Text style={styles.sectionTitle}>Piyasa Haberleri</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => Linking.openURL('https://www.redfin.com/blog/')}>
+                                <Text style={styles.newsViewAll}>Tümünü Gör</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.newsScroll}>
+                            {newsLoading ? (
+                                <View style={styles.newsLoadingContainer}>
+                                    <ActivityIndicator size="small" color={colors.accent.cyan} />
+                                    <Text style={styles.newsLoadingText}>Haberler yükleniyor...</Text>
+                                </View>
+                            ) : news.map((item, index) => (
+                                <TouchableOpacity
+                                    key={`news-${index}-${item.id}`}
+                                    style={styles.newsCard}
+                                    activeOpacity={0.8}
+                                    onPress={() => {
+                                        handlePress();
+                                        Linking.openURL(item.link);
+                                    }}
+                                >
+                                    <Image source={{ uri: item.image }} style={styles.newsImage} />
+                                    <LinearGradient
+                                        colors={['transparent', 'rgba(0,0,0,0.9)']}
+                                        style={styles.newsGradient}
+                                    >
+                                        <View style={styles.newsSourceBadge}>
+                                            <Text style={styles.newsSourceText}>{item.source}</Text>
+                                        </View>
+                                        <Text style={styles.newsTitle} numberOfLines={2}>{item.title}</Text>
+                                        <Text style={styles.newsDate}>{formatNewsDate(item.pubDate)}</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </Animated.View>
 
                     {/* Recent Activity */}
@@ -403,5 +587,77 @@ const styles = StyleSheet.create({
     activityAmount: {
         fontSize: fontSize.sm,
         fontWeight: fontWeight.bold as any,
+    },
+    // News Section Styles
+    newsHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    newsViewAll: {
+        fontSize: fontSize.sm,
+        color: colors.accent.cyan,
+        fontWeight: fontWeight.semibold as any,
+    },
+    newsScroll: {
+        paddingRight: spacing.xl,
+        marginBottom: spacing.xl,
+    },
+    newsCard: {
+        width: 220,
+        height: 160,
+        borderRadius: borderRadius.xl,
+        overflow: 'hidden',
+        marginRight: spacing.md,
+        position: 'relative',
+    },
+    newsImage: {
+        width: '100%',
+        height: '100%',
+    },
+    newsGradient: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: spacing.md,
+    },
+    newsSourceBadge: {
+        alignSelf: 'flex-start',
+        backgroundColor: colors.accent.cyan,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 3,
+        borderRadius: borderRadius.sm,
+        marginBottom: spacing.xs,
+    },
+    newsSourceText: {
+        fontSize: 10,
+        fontWeight: fontWeight.bold as any,
+        color: colors.background.main,
+    },
+    newsTitle: {
+        fontSize: fontSize.sm,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+        lineHeight: 18,
+    },
+    newsDate: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
+        marginTop: 4,
+    },
+    newsLoadingContainer: {
+        width: 220,
+        height: 160,
+        borderRadius: borderRadius.xl,
+        backgroundColor: colors.background.card,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+    },
+    newsLoadingText: {
+        fontSize: fontSize.xs,
+        color: colors.text.tertiary,
     },
 });

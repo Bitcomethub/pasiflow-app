@@ -24,7 +24,7 @@ export default function DocumentsScreen() {
 
     return (
         <LinearGradient
-            colors={[colors.background.main, '#0F172A']}
+            colors={[colors.background.main, '#1F2937']}
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>
@@ -42,7 +42,10 @@ export default function DocumentsScreen() {
                             <Card style={styles.sectionCard}>
                                 {section.items.map((doc, docIndex) => (
                                     <View key={doc.id}>
-                                        <TouchableOpacity style={styles.docItem}>
+                                        <TouchableOpacity
+                                            style={styles.docItem}
+                                            onPress={() => console.log(`Opening ${doc.name}`)}
+                                        >
                                             <View style={styles.docIconContainer}>
                                                 <Ionicons name="document-text" size={24} color={colors.accent.cyan} />
                                             </View>
@@ -53,7 +56,10 @@ export default function DocumentsScreen() {
                                                     <Text style={styles.docSize}>• {doc.size}</Text>
                                                 </View>
                                             </View>
-                                            <TouchableOpacity style={styles.downloadButton}>
+                                            <TouchableOpacity
+                                                style={styles.downloadButton}
+                                                onPress={() => console.log(`Downloading ${doc.name}`)}
+                                            >
                                                 <Ionicons name="download-outline" size={20} color={colors.text.secondary} />
                                             </TouchableOpacity>
                                         </TouchableOpacity>

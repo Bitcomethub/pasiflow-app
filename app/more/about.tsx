@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +21,12 @@ export default function AboutScreen() {
                 </View>
 
                 <ScrollView contentContainerStyle={styles.content}>
-                    <Text style={styles.brandTitle}>PASIFLOW</Text>
+                    <View style={{ alignItems: 'center', marginTop: spacing.lg }}>
+                        <Image
+                            source={require('../../assets/images/pasiflow-logo.png')}
+                            style={{ width: 220, height: 70, resizeMode: 'contain' }}
+                        />
+                    </View>
                     <Text style={styles.brandSubtitle}>Kira Garantili Yatırım Sistemi</Text>
 
                     <View style={styles.section}>
@@ -40,9 +45,53 @@ export default function AboutScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Neden Pasiflow?</Text>
                         <Text style={styles.sectionText}>
-                            • <Text style={styles.highlight}>Kira Garantisi:</Text> Mülkleriniz boş kalsa bile kiranız hesabınıza yatar.{'\n'}
-                            • <Text style={styles.highlight}>Dolar Bazlı Getiri:</Text> Yatırımlarınız döviz bazında değerlenir.{'\n'}
-                            • <Text style={styles.highlight}>Profesyonel Yönetim:</Text> Emlak yönetimi, bakım ve onarım süreçlerini biz üstleniyoruz.
+                            <Text style={styles.sectionText}>
+                                • <Text style={styles.highlight}>Kira Garantisi:</Text> Mülkleriniz boş kalsa bile kiranız hesabınıza yatar.{'\n'}
+                                • <Text style={styles.highlight}>Dolar Bazlı Getiri:</Text> Yatırımlarınız döviz bazında değerlenir.{'\n'}
+                                • <Text style={styles.highlight}>Profesyonel Yönetim:</Text> Emlak yönetimi, bakım ve onarım süreçlerini biz üstleniyoruz.
+                            </Text>
+                        </Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Nasıl Çalışır?</Text>
+                        <View style={styles.stepItem}>
+                            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Strateji & İlk Görüşme</Text>
+                                <Text style={styles.stepText}>Finansal hedeflerinizi belirleyip size özel yatırım planı oluşturuyoruz.</Text>
+                            </View>
+                        </View>
+                        <View style={styles.stepItem}>
+                            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Ev Seçimi & Analiz</Text>
+                                <Text style={styles.stepText}>Saha ekiplerimizin analizleriyle güçlü kira talep pazarlarında mülk seçimi.</Text>
+                            </View>
+                        </View>
+                        <View style={styles.stepItem}>
+                            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Satın Alma & Kapanış</Text>
+                                <Text style={styles.stepText}>Online imza kolaylığı ile 3-5 gün içinde tapu devri.</Text>
+                            </View>
+                        </View>
+                        <View style={styles.stepItem}>
+                            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>4</Text></View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Yönetim & Kira</Text>
+                                <Text style={styles.stepText}>Kiracı yönetimi ve 1. günden itibaren pasif gelir akışı.</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Kurucu & İletişim</Text>
+                        <Text style={styles.sectionText}>
+                            Amerika'da yatırımın güvenilir adresi:{'\n'}
+                            • <Text style={styles.highlight}>Erman Adanır</Text>{'\n'}
+                            ✉️ erman.adanir@pasiflow.com{'\n'}
+                            📞 +1 (302) 555-0123
                         </Text>
                     </View>
                 </ScrollView>
@@ -116,5 +165,38 @@ const styles = StyleSheet.create({
     highlight: {
         color: colors.accent.cyan,
         fontWeight: fontWeight.bold as any,
+    },
+    stepItem: {
+        flexDirection: 'row',
+        marginBottom: spacing.md,
+    },
+    stepNumber: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: colors.accent.cyan,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.md,
+        marginTop: 2,
+    },
+    stepNumberText: {
+        color: colors.background.main,
+        fontWeight: fontWeight.bold as any,
+        fontSize: 12,
+    },
+    stepContent: {
+        flex: 1,
+    },
+    stepTitle: {
+        fontSize: fontSize.sm,
+        fontWeight: fontWeight.bold as any,
+        color: colors.text.primary,
+        marginBottom: 2,
+    },
+    stepText: {
+        fontSize: fontSize.sm,
+        color: colors.text.secondary,
+        lineHeight: 20,
     }
 });

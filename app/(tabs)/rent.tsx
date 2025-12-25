@@ -43,7 +43,7 @@ export default function RentScreen() {
 
     return (
         <LinearGradient
-            colors={[colors.background.main, '#0F172A']}
+            colors={[colors.background.main, '#1F2937']}
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>

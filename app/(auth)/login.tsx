@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Dimensions, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
@@ -15,7 +15,11 @@ export default function LoginScreen() {
     const [error, setError] = useState('');
 
     const handleLogin = async () => {
-        if (!email || !password) {
+        // Trim whitespace from inputs
+        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedPassword = password.trim();
+
+        if (!trimmedEmail || !trimmedPassword) {
             setError('Lütfen tüm alanları doldurun');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
@@ -24,8 +28,9 @@ export default function LoginScreen() {
         const DEMO_EMAIL = 'demo@pasiflow.com';
         const DEMO_PASSWORD = 'demo123';
 
-        if (email.toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
-            setError('Geçersiz e-posta veya şifre.\n\nDemo: demo@pasiflow.com / demo123');
+        // Case-insensitive email comparison
+        if (trimmedEmail !== DEMO_EMAIL || trimmedPassword !== DEMO_PASSWORD) {
+            setError('Geçersiz e-posta veya şifre.\n\nDemo Bilgileri:\n📧 demo@pasiflow.com\n🔑 demo123');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
@@ -37,10 +42,12 @@ export default function LoginScreen() {
         setLoading(true);
         setError('');
 
+        // Simulate login delay
         setTimeout(() => {
             setLoading(false);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             router.replace('/(tabs)');
-        }, 1000);
+        }, 800);
     };
 
     return (
@@ -50,74 +57,85 @@ export default function LoginScreen() {
         >
             <SafeAreaView style={styles.safeArea}>
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.keyboardView}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    style={{ flex: 1 }}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
                 >
-                    <View style={styles.content}>
-                        {/* Header */}
-                        <View style={styles.header}>
-                            <View style={styles.logoContainer}>
-                                <Text style={styles.logoText}>Pasiflow</Text>
-                            </View>
-                            <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
-                        </View>
-
-                        {/* Login Card */}
-                        <LinearGradient
-                            colors={[colors.background.card, 'rgba(19, 19, 43, 0.8)']}
-                            style={styles.cardContainer}
-                        >
-                            {error ? (
-                                <View style={styles.errorContainer}>
-                                    <Text style={styles.errorText}>{error}</Text>
+                    <ScrollView
+                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50, paddingTop: 60 }}
+                        keyboardShouldPersistTaps="always"
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                    >
+                        <View style={styles.content}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <View style={styles.logoContainer}>
+                                    <Image
+                                        source={require('../../assets/images/pasiflow-logo.png')}
+                                        style={{ width: 320, height: 100, resizeMode: 'contain' }}
+                                    />
                                 </View>
-                            ) : null}
+                                <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+                            </View>
 
-                            <TextInput
-                                label="E-posta Adresi"
-                                placeholder="ornek@email.com"
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                icon="mail-outline"
-                                placeholderTextColor={colors.text.tertiary}
-                            />
+                            {/* Login Card */}
+                            <LinearGradient
+                                colors={[colors.background.card, 'rgba(19, 19, 43, 0.8)']}
+                                style={styles.cardContainer}
+                            >
+                                {error ? (
+                                    <View style={styles.errorContainer}>
+                                        <Text style={styles.errorText}>{error}</Text>
+                                    </View>
+                                ) : null}
 
-                            <TextInput
-                                label="Şifre"
-                                placeholder="••••••••"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                                icon="lock-closed-outline"
-                                placeholderTextColor={colors.text.tertiary}
-                            />
+                                <TextInput
+                                    label="E-posta Adresi"
+                                    placeholder="ornek@email.com"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    icon="mail-outline"
+                                    placeholderTextColor={colors.text.tertiary}
+                                />
 
-                            <TouchableOpacity style={styles.forgotPassword}>
-                                <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
-                            </TouchableOpacity>
+                                <TextInput
+                                    label="Şifre"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                    icon="lock-closed-outline"
+                                    placeholderTextColor={colors.text.tertiary}
+                                />
 
-                            <Button
-                                title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-                                onPress={handleLogin}
-                                loading={loading}
-                                size="lg"
-                                style={styles.loginButton}
-                                textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
-                            />
-                        </LinearGradient>
-
-                        {/* Footer - Social Proof / Register */}
-                        <View style={styles.footer}>
-                            <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
-                            <Link href="/(auth)/register" asChild>
-                                <TouchableOpacity>
-                                    <Text style={styles.registerLink}>Hesap Oluşturun</Text>
+                                <TouchableOpacity style={styles.forgotPassword}>
+                                    <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
                                 </TouchableOpacity>
-                            </Link>
+
+                                <Button
+                                    title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                                    onPress={handleLogin}
+                                    loading={loading}
+                                    size="lg"
+                                    style={styles.loginButton}
+                                    textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
+                                />
+                            </LinearGradient>
+
+                            {/* Footer - Social Proof / Register */}
+                            <View style={styles.footer}>
+                                <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
+                                <Link href="/(auth)/register" asChild>
+                                    <TouchableOpacity>
+                                        <Text style={styles.registerLink}>Hesap Oluşturun</Text>
+                                    </TouchableOpacity>
+                                </Link>
+                            </View>
                         </View>
-                    </View>
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </LinearGradient>

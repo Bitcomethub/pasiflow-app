@@ -65,7 +65,7 @@ export default function ContactScreen() {
                     <View style={styles.contactInfo}>
                         <View style={styles.infoItem}>
                             <Ionicons name="mail-outline" size={24} color={colors.accent.cyan} />
-                            <Text style={styles.infoText}>info@pasiflow.com</Text>
+                            <Text style={styles.infoText}>erman.adanir@pasiflow.com</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <Ionicons name="call-outline" size={24} color={colors.accent.cyan} />

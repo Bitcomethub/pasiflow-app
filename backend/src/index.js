@@ -2,6 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const newsRoutes = require('./routes/newsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -10,6 +16,9 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -21,6 +30,10 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/uploads', uploadRoutes);
+app.use('/api/news', newsRoutes);
+
 app.get('/api', (req, res) => {
     res.json({
         message: 'Pasiflow API',

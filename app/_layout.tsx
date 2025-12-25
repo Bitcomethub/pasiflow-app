@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
+import { Asset } from 'expo-asset';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,9 +16,26 @@ export default function RootLayout() {
         // We'll add custom fonts here later
     });
 
+
+
     useEffect(() => {
+        async function prepare() {
+            try {
+                // Preload image assets
+                await Asset.loadAsync([
+                    require('../assets/images/pasiflow-logo.png'),
+                ]);
+            } catch (e) {
+                console.warn(e);
+            } finally {
+                if (fontsLoaded) {
+                    await SplashScreen.hideAsync();
+                }
+            }
+        }
+
         if (fontsLoaded) {
-            SplashScreen.hideAsync();
+            prepare();
         }
     }, [fontsLoaded]);
 

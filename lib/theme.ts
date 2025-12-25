@@ -26,10 +26,10 @@ export const colors = {
     },
     // Backgrounds - Deep & Glassy
     background: {
-        main: '#0B0B15', // Deep Blue/Black (Void)
-        card: '#13132B', // Slightly lighter deep blue
-        subtle: '#1C1C35', // Section backgrounds
-        glass: 'rgba(30, 30, 60, 0.7)', // Glass effect base
+        main: '#111827', // Deep Gray-Blue (Lighter than void)
+        card: '#1F2937', // Lighter Gray-Blue for cards
+        subtle: '#374151', // Section backgrounds
+        glass: 'rgba(31, 41, 55, 0.7)', // Glass effect base (Gray-Blue)
         modal: 'rgba(10, 10, 20, 0.95)',
     },
     // Text - Glowing & crisp
