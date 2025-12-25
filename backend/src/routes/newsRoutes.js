@@ -51,7 +51,17 @@ router.get('/', async (req, res) => {
                     let fullContent = item['content:encoded'] || item.content || item.contentSnippet;
 
                     // Simple text cleanup if it's too raw (optional)
-                    // fullContent = fullContent.replace(/<[^>]*>?/gm, ''); 
+                    if (fullContent) {
+                        fullContent = fullContent
+                            .replace(/<br\s*\/?>/gi, '\n') // Replace <br> with newlines
+                            .replace(/<p>/gi, '\n\n') // Paragraphs to double newlines
+                            .replace(/<\/p>/gi, '')
+                            .replace(/<[^>]*>?/gm, '') // Remove remaining tags
+                            .replace(/&nbsp;/g, ' ') // Decode common entities
+                            .replace(/&amp;/g, '&')
+                            .replace(/\n\s*\n/g, '\n\n') // Normalize newlines
+                            .trim();
+                    }
 
                     return {
                         id: Buffer.from(item.link || item.title).toString('base64').slice(0, 20),
