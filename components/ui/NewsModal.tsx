@@ -45,14 +45,29 @@ export function NewsModal({ visible, news, onClose }: NewsModalProps) {
     // Full news content
     const fullContent = news.content || news.snippet;
 
-    // AI Analysis for Pasiflow
-    const aiAnalysis = `Bu haber, ABD emlak piyasasındaki güncel gelişmeleri yansıtmaktadır. Midwest bölgesi (Cleveland, Detroit, Memphis) yatırımcılar için cazip fırsatlar sunmaya devam ediyor.
+    // Dynamic Pasiflow analysis based on news content
+    const generateAnalysis = () => {
+        const title = news.title.toLowerCase();
+        const content = (news.snippet || '').toLowerCase();
+        const combined = title + ' ' + content;
 
-• Section 8 programı ile güvenli kira garantisi
-• 2025 yılında %5-8 değer artışı beklentisi  
-• Düşük giriş maliyeti, yüksek ROI potansiyeli
+        // Keyword-based dynamic analysis
+        if (combined.includes('artış') || combined.includes('yüksel') || combined.includes('increase') || combined.includes('rise')) {
+            return `📈 Bu haber, emlak piyasasında olumlu bir trend sinyali veriyor.\n\n• Fiyat artışları, mevcut yatırımların değer kazanması anlamına geliyor\n• Erken yatırım yapanlar için ciddi getiri potansiyeli\n• Pasiflow portföyündeki mülkler bu trendden olumlu etkilenecektir\n\n💡 Önerimiz: Değer artışı beklenen bölgelerde yeni yatırım fırsatlarını değerlendirin.`;
+        } else if (combined.includes('düşüş') || combined.includes('azal') || combined.includes('drop') || combined.includes('fall')) {
+            return `📉 Bu haber, piyasada kısa vadeli düzeltme olabileceğini gösteriyor.\n\n• Fiyat düşüşleri, yeni alım fırsatları yaratabilir\n• Uzun vadeli yatırımcılar için cazip giriş noktaları\n• Pasiflow olarak, düşüşleri stratejik alım fırsatı olarak görüyoruz\n\n💡 Önerimiz: Temel değeri güçlü mülklerde pozisyon almayı düşünün.`;
+        } else if (combined.includes('kira') || combined.includes('rent') || combined.includes('gelir')) {
+            return `🏠 Bu haber, kira piyasasındaki dinamikleri yansıtıyor.\n\n• Kira gelirleri, gayrimenkul yatırımlarının temel getiri kaynağıdır\n• Section 8 programı ile garantili ödeme avantajı\n• Yüksek kira talebi, yatırımcılar için olumlu bir gösterge\n\n💡 Önerimiz: Yüksek kira getirisi sunan bölgelere odaklanın.`;
+        } else if (combined.includes('faiz') || combined.includes('rate') || combined.includes('mortgage')) {
+            return `🏦 Bu haber, finansman koşullarını etkileyen önemli bir gelişme.\n\n• Faiz oranları, yatırım maliyetlerini doğrudan etkiler\n• Düşük faiz dönemleri, yatırım için ideal\n• Yüksek faiz dönemlerinde nakit alımlar avantaj sağlar\n\n💡 Önerimiz: Finansman stratejinizi güncel koşullara göre optimize edin.`;
+        } else if (combined.includes('detroit') || combined.includes('cleveland') || combined.includes('memphis')) {
+            return `🌆 Bu haber, Pasiflow'un odak bölgeleriyle doğrudan ilgili.\n\n• Midwest bölgesi, yüksek getiri potansiyeli sunuyor\n• Düşük giriş maliyetleri ile yatırım erişilebilirliği\n• Section 8 programı desteği ile güvenli gelir akışı\n\n💡 Önerimiz: Bu bölgelerdeki fırsatları yakından takip edin.`;
+        } else {
+            return `📊 Bu haber, ABD emlak piyasasındaki genel eğilimleri yansıtıyor.\n\n• Piyasa dinamiklerini takip etmek, bilinçli yatırım kararları için kritik\n• Çeşitlendirilmiş portföy, risk yönetiminin temelidir\n• Pasiflow, sizin için en uygun fırsatları analiz ediyor\n\n💡 Önerimiz: Düzenli piyasa takibi ile fırsatları kaçırmayın.`;
+        }
+    };
 
-Pasiflow olarak bu gelişmeyi portföy çeşitlendirmesi açısından olumlu değerlendiriyoruz.`;
+    const pasiflowAnalysis = generateAnalysis();
 
     return (
         <Modal
@@ -127,7 +142,7 @@ Pasiflow olarak bu gelişmeyi portföy çeşitlendirmesi açısından olumlu de�
                                 </LinearGradient>
                                 <Text style={styles.aiTitle}>Pasiflow Görüşü</Text>
                             </View>
-                            <Text style={styles.aiContent}>{aiAnalysis}</Text>
+                            <Text style={styles.aiContent}>{pasiflowAnalysis}</Text>
                         </View>
 
                         {/* Bottom Padding */}
