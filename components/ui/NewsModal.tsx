@@ -71,26 +71,73 @@ Bu gelişmeler ışığında, bilinçli yatırımcılar portföylerini çeşitle
 
     const fullContent = generateFullContent();
 
-    // Dynamic Pasiflow analysis based on news content
+    // Dynamic Pasiflow analysis based on actual news content
     const generateAnalysis = () => {
-        const title = news.title.toLowerCase();
-        const content = (news.snippet || '').toLowerCase();
-        const combined = title + ' ' + content;
+        const title = news.title;
+        const snippet = news.snippet || '';
+        const combinedLower = (title + ' ' + snippet).toLowerCase();
 
-        // Keyword-based dynamic analysis
-        if (combined.includes('artış') || combined.includes('yüksel') || combined.includes('increase') || combined.includes('rise')) {
-            return `📈 Bu haber, emlak piyasasında olumlu bir trend sinyali veriyor.\n\n• Fiyat artışları, mevcut yatırımların değer kazanması anlamına geliyor\n• Erken yatırım yapanlar için ciddi getiri potansiyeli\n• Pasiflow portföyündeki mülkler bu trendden olumlu etkilenecektir\n\n💡 Önerimiz: Değer artışı beklenen bölgelerde yeni yatırım fırsatlarını değerlendirin.`;
-        } else if (combined.includes('düşüş') || combined.includes('azal') || combined.includes('drop') || combined.includes('fall')) {
-            return `📉 Bu haber, piyasada kısa vadeli düzeltme olabileceğini gösteriyor.\n\n• Fiyat düşüşleri, yeni alım fırsatları yaratabilir\n• Uzun vadeli yatırımcılar için cazip giriş noktaları\n• Pasiflow olarak, düşüşleri stratejik alım fırsatı olarak görüyoruz\n\n💡 Önerimiz: Temel değeri güçlü mülklerde pozisyon almayı düşünün.`;
-        } else if (combined.includes('kira') || combined.includes('rent') || combined.includes('gelir')) {
-            return `🏠 Bu haber, kira piyasasındaki dinamikleri yansıtıyor.\n\n• Kira gelirleri, gayrimenkul yatırımlarının temel getiri kaynağıdır\n• Section 8 programı ile garantili ödeme avantajı\n• Yüksek kira talebi, yatırımcılar için olumlu bir gösterge\n\n💡 Önerimiz: Yüksek kira getirisi sunan bölgelere odaklanın.`;
-        } else if (combined.includes('faiz') || combined.includes('rate') || combined.includes('mortgage')) {
-            return `🏦 Bu haber, finansman koşullarını etkileyen önemli bir gelişme.\n\n• Faiz oranları, yatırım maliyetlerini doğrudan etkiler\n• Düşük faiz dönemleri, yatırım için ideal\n• Yüksek faiz dönemlerinde nakit alımlar avantaj sağlar\n\n💡 Önerimiz: Finansman stratejinizi güncel koşullara göre optimize edin.`;
-        } else if (combined.includes('detroit') || combined.includes('cleveland') || combined.includes('memphis')) {
-            return `🌆 Bu haber, Pasiflow'un odak bölgeleriyle doğrudan ilgili.\n\n• Midwest bölgesi, yüksek getiri potansiyeli sunuyor\n• Düşük giriş maliyetleri ile yatırım erişilebilirliği\n• Section 8 programı desteği ile güvenli gelir akışı\n\n💡 Önerimiz: Bu bölgelerdeki fırsatları yakından takip edin.`;
+        // Extract key terms from the news
+        const extractKeyPoints = () => {
+            const points: string[] = [];
+
+            // Location analysis
+            if (combinedLower.includes('detroit')) points.push('Detroit bölgesi yatırım potansiyeli artıyor');
+            if (combinedLower.includes('cleveland')) points.push('Cleveland pazarı güçlü kalmaya devam ediyor');
+            if (combinedLower.includes('memphis')) points.push('Memphis kira getirileri çekici seviyede');
+            if (combinedLower.includes('ohio') || combinedLower.includes('michigan') || combinedLower.includes('tennessee'))
+                points.push('Midwest bölgesi yatırımcılar için cazip');
+
+            // Market trends
+            if (combinedLower.includes('artış') || combinedLower.includes('increase') || combinedLower.includes('rise') || combinedLower.includes('growth'))
+                points.push('Fiyat artış trendi mevcut pozisyonları güçlendiriyor');
+            if (combinedLower.includes('düşüş') || combinedLower.includes('drop') || combinedLower.includes('decline'))
+                points.push('Düşüş, yeni alım fırsatları yaratabilir');
+
+            // Investment factors
+            if (combinedLower.includes('kira') || combinedLower.includes('rent'))
+                points.push('Kira dinamikleri nakit akışını etkiliyor');
+            if (combinedLower.includes('faiz') || combinedLower.includes('rate') || combinedLower.includes('mortgage'))
+                points.push('Faiz oranları finansman maliyetlerini belirliyor');
+            if (combinedLower.includes('section 8') || combinedLower.includes('hud'))
+                points.push('Section 8 garantisi ile güvenli gelir');
+
+            // Default points if none match
+            if (points.length === 0) {
+                points.push('Piyasa gelişmeleri yakından takip edilmeli');
+                points.push('Çeşitlendirilmiş portföy riski azaltır');
+            }
+
+            return points.slice(0, 3); // Max 3 points
+        };
+
+        const keyPoints = extractKeyPoints();
+        const pointsList = keyPoints.map(p => `• ${p}`).join('\n');
+
+        // Determine sentiment
+        let sentiment = '📊';
+        let recommendation = '';
+
+        if (combinedLower.includes('artış') || combinedLower.includes('increase') || combinedLower.includes('positive') || combinedLower.includes('growth')) {
+            sentiment = '📈';
+            recommendation = 'Bu olumlu gelişme, mevcut yatırımları değerlendirebilir.';
+        } else if (combinedLower.includes('düşüş') || combinedLower.includes('risk') || combinedLower.includes('concern')) {
+            sentiment = '📉';
+            recommendation = 'Dikkatli yaklaşım öneriyoruz, fırsatları değerlendirin.';
+        } else if (combinedLower.includes('kira') || combinedLower.includes('rent')) {
+            sentiment = '🏠';
+            recommendation = 'Kira odaklı yatırımlar için uygun bir dönem.';
         } else {
-            return `📊 Bu haber, ABD emlak piyasasındaki genel eğilimleri yansıtıyor.\n\n• Piyasa dinamiklerini takip etmek, bilinçli yatırım kararları için kritik\n• Çeşitlendirilmiş portföy, risk yönetiminin temelidir\n• Pasiflow, sizin için en uygun fırsatları analiz ediyor\n\n💡 Önerimiz: Düzenli piyasa takibi ile fırsatları kaçırmayın.`;
+            recommendation = 'Gelişmeleri izleyip stratejik adımlar atın.';
         }
+
+        return `${sentiment} "${title}" başlıklı bu haber hakkında değerlendirmemiz:
+
+${pointsList}
+
+💡 ${recommendation}
+
+Pasiflow ekibi olarak, bu tür piyasa gelişmelerini müşterilerimiz adına sürekli analiz ediyoruz.`;
     };
 
     const pasiflowAnalysis = generateAnalysis();
