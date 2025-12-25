@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows, propertyStatus } from '@/lib/theme';
@@ -85,39 +85,54 @@ export default function PropertiesScreen() {
     const pulseAnim = React.useRef(new Animated.Value(1)).current;
     const glowAnim = React.useRef(new Animated.Value(0.5)).current;
 
-    React.useEffect(() => {
-        // Subtle pulse animation for the flame icon
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(pulseAnim, {
-                    toValue: 1.15,
-                    duration: 800,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(pulseAnim, {
-                    toValue: 1,
-                    duration: 800,
-                    useNativeDriver: true,
-                }),
-            ])
-        ).start();
+    // Run animations every time this tab is focused
+    useFocusEffect(
+        useCallback(() => {
+            // Reset animation values
+            pulseAnim.setValue(1);
+            glowAnim.setValue(0.5);
 
-        // Glow animation for the section title
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(glowAnim, {
-                    toValue: 1,
-                    duration: 1500,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(glowAnim, {
-                    toValue: 0.5,
-                    duration: 1500,
-                    useNativeDriver: true,
-                }),
-            ])
-        ).start();
-    }, []);
+            // Subtle pulse animation for the flame icon
+            const pulseAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim, {
+                        toValue: 1.15,
+                        duration: 800,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(pulseAnim, {
+                        toValue: 1,
+                        duration: 800,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            pulseAnimation.start();
+
+            // Glow animation for the section title
+            const glowAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(glowAnim, {
+                        toValue: 1,
+                        duration: 1500,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(glowAnim, {
+                        toValue: 0.5,
+                        duration: 1500,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            glowAnimation.start();
+
+            // Cleanup: stop animations when leaving the tab
+            return () => {
+                pulseAnimation.stop();
+                glowAnimation.stop();
+            };
+        }, [])
+    );
 
     const renderProperty = ({ item }: { item: any }) => (
         <Card style={styles.propertyCard}>

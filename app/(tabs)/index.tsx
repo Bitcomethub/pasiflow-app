@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated, Easing, Image, Linking, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -58,8 +58,8 @@ export default function Dashboard() {
     const TARGET_ROI = 8.4;
     const TARGET_TREND = 12.5;
 
+    // Fetch news only once on mount
     useEffect(() => {
-        // Fetch real news from backend
         const loadNews = async () => {
             try {
                 const fetchedNews = await fetchNews();
@@ -76,58 +76,69 @@ export default function Dashboard() {
             }
         };
         loadNews();
-
-        // Animation
-        Animated.parallel([
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 800,
-                useNativeDriver: true,
-                easing: Easing.out(Easing.exp),
-            }),
-            Animated.timing(slideAnim, {
-                toValue: 0,
-                duration: 800,
-                useNativeDriver: true,
-                easing: Easing.out(Easing.back(1.5)), // Cosmic bounce effect
-            }),
-        ]).start();
-
-        // Count-up animation for numbers (user engagement)
-        const ANIMATION_DURATION = 1500; // 1.5 seconds
-        const FRAME_RATE = 60;
-        const totalFrames = (ANIMATION_DURATION / 1000) * FRAME_RATE;
-        let currentFrame = 0;
-
-        const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4); // Smooth deceleration
-
-        const animateNumbers = () => {
-            currentFrame++;
-            const progress = easeOutQuart(currentFrame / totalFrames);
-
-            setDisplayPortfolio(Math.floor(TARGET_PORTFOLIO * progress));
-            setDisplayRent(Math.floor(TARGET_RENT * progress));
-            setDisplayROI(parseFloat((TARGET_ROI * progress).toFixed(1)));
-            setDisplayTrend(parseFloat((TARGET_TREND * progress).toFixed(1)));
-
-            if (currentFrame < totalFrames) {
-                requestAnimationFrame(animateNumbers);
-            } else {
-                // Ensure final values are exact
-                setDisplayPortfolio(TARGET_PORTFOLIO);
-                setDisplayRent(TARGET_RENT);
-                setDisplayROI(TARGET_ROI);
-                setDisplayTrend(TARGET_TREND);
-            }
-        };
-
-        // Start number animation after a slight delay for dramatic effect
-        const timer = setTimeout(() => {
-            requestAnimationFrame(animateNumbers);
-        }, 400);
-
-        return () => clearTimeout(timer);
     }, []);
+
+    // Run animations every time this tab is focused
+    useFocusEffect(
+        useCallback(() => {
+            // Reset animation values
+            fadeAnim.setValue(0);
+            slideAnim.setValue(50);
+            setDisplayPortfolio(0);
+            setDisplayRent(0);
+            setDisplayROI(0);
+            setDisplayTrend(0);
+
+            // Start fade/slide animations
+            Animated.parallel([
+                Animated.timing(fadeAnim, {
+                    toValue: 1,
+                    duration: 800,
+                    useNativeDriver: true,
+                    easing: Easing.out(Easing.exp),
+                }),
+                Animated.timing(slideAnim, {
+                    toValue: 0,
+                    duration: 800,
+                    useNativeDriver: true,
+                    easing: Easing.out(Easing.back(1.5)),
+                }),
+            ]).start();
+
+            // Count-up animation for numbers
+            const ANIMATION_DURATION = 1500;
+            const FRAME_RATE = 60;
+            const totalFrames = (ANIMATION_DURATION / 1000) * FRAME_RATE;
+            let currentFrame = 0;
+
+            const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+
+            const animateNumbers = () => {
+                currentFrame++;
+                const progress = easeOutQuart(currentFrame / totalFrames);
+
+                setDisplayPortfolio(Math.floor(TARGET_PORTFOLIO * progress));
+                setDisplayRent(Math.floor(TARGET_RENT * progress));
+                setDisplayROI(parseFloat((TARGET_ROI * progress).toFixed(1)));
+                setDisplayTrend(parseFloat((TARGET_TREND * progress).toFixed(1)));
+
+                if (currentFrame < totalFrames) {
+                    requestAnimationFrame(animateNumbers);
+                } else {
+                    setDisplayPortfolio(TARGET_PORTFOLIO);
+                    setDisplayRent(TARGET_RENT);
+                    setDisplayROI(TARGET_ROI);
+                    setDisplayTrend(TARGET_TREND);
+                }
+            };
+
+            const timer = setTimeout(() => {
+                requestAnimationFrame(animateNumbers);
+            }, 400);
+
+            return () => clearTimeout(timer);
+        }, [])
+    );
 
     const handlePress = () => {
         if (Platform.OS === 'ios') {
