@@ -44,6 +44,8 @@ const FALLBACK_NEWS = [
 export default function Dashboard() {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(50)).current;
+    const actionPulseAnim = useRef(new Animated.Value(1)).current;
+    const actionGlowAnim = useRef(new Animated.Value(0)).current;
     const [news, setNews] = useState<NewsItem[]>([]);
     const [newsLoading, setNewsLoading] = useState(true);
 
@@ -62,6 +64,7 @@ export default function Dashboard() {
     const TARGET_RENT = 2850;
     const TARGET_ROI = 8.4;
     const TARGET_TREND = 12.5;
+
 
     // Fetch news only once on mount
     useEffect(() => {
@@ -141,7 +144,47 @@ export default function Dashboard() {
                 requestAnimationFrame(animateNumbers);
             }, 400);
 
-            return () => clearTimeout(timer);
+            // Quick Actions pulse animation
+            actionPulseAnim.setValue(1);
+            actionGlowAnim.setValue(0);
+
+            const pulseAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(actionPulseAnim, {
+                        toValue: 1.08,
+                        duration: 1000,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(actionPulseAnim, {
+                        toValue: 1,
+                        duration: 1000,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            pulseAnimation.start();
+
+            const glowAnimation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(actionGlowAnim, {
+                        toValue: 1,
+                        duration: 1500,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(actionGlowAnim, {
+                        toValue: 0,
+                        duration: 1500,
+                        useNativeDriver: true,
+                    }),
+                ])
+            );
+            glowAnimation.start();
+
+            return () => {
+                clearTimeout(timer);
+                pulseAnimation.stop();
+                glowAnimation.stop();
+            };
         }, [])
     );
 
@@ -249,28 +292,57 @@ export default function Dashboard() {
                         <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.actionsScroll}>
                             {[
-                                { icon: 'flame', label: 'Aktif Fırsatlar', color: colors.warning, route: '/properties' },
-                                { icon: 'add-circle', label: 'Yatırım Yap', color: colors.accent.cyan, route: '/properties' },
+                                { icon: 'flame', label: 'Aktif Fırsatlar', color: colors.warning, route: '/properties', highlight: true },
+                                { icon: 'add-circle', label: 'Yatırım Yap', color: colors.accent.cyan, route: '/properties', highlight: true },
                                 { icon: 'calculator', label: 'Hesapla', color: colors.accent.purple, route: '/simulator' },
                                 { icon: 'document-text', label: 'Raporlar', color: colors.primary[400], route: '/documents' },
                                 { icon: 'chatbubble-ellipses', label: 'Destek', color: colors.accent.gradientStart, route: '/more/contact' },
                             ].map((action, index) => (
-                                <TouchableOpacity
+                                <Animated.View
                                     key={index}
-                                    style={styles.actionCard}
-                                    onPress={() => {
-                                        handlePress();
-                                        if (action.route) {
-                                            router.push(action.route as any);
-                                        }
-                                    }}
-                                    activeOpacity={0.7}
+                                    style={action.highlight ? {
+                                        transform: [{ scale: actionPulseAnim }],
+                                        opacity: Animated.add(0.9, Animated.multiply(actionGlowAnim, 0.1)),
+                                    } : {}}
                                 >
-                                    <View style={[styles.actionIcon, { borderColor: `${action.color}40`, backgroundColor: `${action.color}10` }]}>
-                                        <Ionicons name={action.icon as any} size={24} color={action.color} />
-                                    </View>
-                                    <Text style={styles.actionLabel}>{action.label}</Text>
-                                </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.actionCard,
+                                            action.highlight && {
+                                                shadowColor: action.color,
+                                                shadowOffset: { width: 0, height: 4 },
+                                                shadowOpacity: 0.4,
+                                                shadowRadius: 8,
+                                                elevation: 6,
+                                            }
+                                        ]}
+                                        onPress={() => {
+                                            handlePress();
+                                            if (action.route) {
+                                                router.push(action.route as any);
+                                            }
+                                        }}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={[
+                                            styles.actionIcon,
+                                            {
+                                                borderColor: `${action.color}40`,
+                                                backgroundColor: `${action.color}15`,
+                                            },
+                                            action.highlight && {
+                                                borderColor: action.color,
+                                                borderWidth: 2,
+                                            }
+                                        ]}>
+                                            <Ionicons name={action.icon as any} size={24} color={action.color} />
+                                        </View>
+                                        <Text style={[
+                                            styles.actionLabel,
+                                            action.highlight && { color: action.color, fontWeight: '700' as any }
+                                        ]}>{action.label}</Text>
+                                    </TouchableOpacity>
+                                </Animated.View>
                             ))}
                         </ScrollView>
                     </Animated.View>
