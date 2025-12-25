@@ -59,13 +59,12 @@ export default function LoginScreen() {
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1 }}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
                 >
                     <ScrollView
                         contentContainerStyle={styles.scrollContent}
                         keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="interactive"
                         showsVerticalScrollIndicator={false}
-                        bounces={true}
                     >
                         <View style={styles.content}>
                             {/* Header */}
