@@ -9,8 +9,7 @@ import {
     Image,
     ScrollView,
     TextInput as RNTextInput,
-    Keyboard,
-    TouchableWithoutFeedback
+    Keyboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
@@ -82,142 +81,141 @@ export default function LoginScreen() {
                     style={styles.keyboardView}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
-                    <TouchableWithoutFeedback onPress={dismissKeyboard}>
-                        <ScrollView
-                            contentContainerStyle={styles.scrollContent}
-                            keyboardShouldPersistTaps="handled"
-                            showsVerticalScrollIndicator={false}
-                            bounces={false}
-                        >
-                            <View style={styles.content}>
-                                {/* Header */}
-                                <View style={styles.header}>
-                                    <View style={styles.logoContainer}>
-                                        <Image
-                                            source={require('../../assets/images/pasiflow-logo.png')}
-                                            style={styles.logo}
-                                        />
-                                    </View>
-                                    <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
-                                </View>
-
-                                {/* Login Card */}
-                                <View style={styles.cardContainer}>
-                                    {error ? (
-                                        <View style={styles.errorContainer}>
-                                            <Text style={styles.errorText}>{error}</Text>
-                                        </View>
-                                    ) : null}
-
-                                    {/* Email Input */}
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>E-posta Adresi</Text>
-                                        <View style={[
-                                            styles.inputContainer,
-                                            emailFocused && styles.inputContainerFocused
-                                        ]}>
-                                            <Ionicons
-                                                name="mail-outline"
-                                                size={20}
-                                                color={emailFocused ? colors.accent.cyan : colors.text.tertiary}
-                                                style={styles.inputIcon}
-                                            />
-                                            <RNTextInput
-                                                ref={emailRef}
-                                                style={styles.input}
-                                                placeholder="ornek@email.com"
-                                                placeholderTextColor={colors.text.tertiary}
-                                                value={email}
-                                                onChangeText={setEmail}
-                                                keyboardType="email-address"
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                                onFocus={() => setEmailFocused(true)}
-                                                onBlur={() => setEmailFocused(false)}
-                                                returnKeyType="next"
-                                                onSubmitEditing={() => passwordRef.current?.focus()}
-                                                blurOnSubmit={false}
-                                            />
-                                        </View>
-                                    </View>
-
-                                    {/* Password Input */}
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Şifre</Text>
-                                        <View style={[
-                                            styles.inputContainer,
-                                            passwordFocused && styles.inputContainerFocused
-                                        ]}>
-                                            <Ionicons
-                                                name="lock-closed-outline"
-                                                size={20}
-                                                color={passwordFocused ? colors.accent.cyan : colors.text.tertiary}
-                                                style={styles.inputIcon}
-                                            />
-                                            <RNTextInput
-                                                ref={passwordRef}
-                                                style={styles.input}
-                                                placeholder="••••••••"
-                                                placeholderTextColor={colors.text.tertiary}
-                                                value={password}
-                                                onChangeText={setPassword}
-                                                secureTextEntry={!showPassword}
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                                onFocus={() => setPasswordFocused(true)}
-                                                onBlur={() => setPasswordFocused(false)}
-                                                returnKeyType="done"
-                                                onSubmitEditing={handleLogin}
-                                            />
-                                            <TouchableOpacity
-                                                onPress={() => setShowPassword(!showPassword)}
-                                                style={styles.eyeButton}
-                                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                            >
-                                                <Ionicons
-                                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                                                    size={20}
-                                                    color={colors.text.tertiary}
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-
-                                    <TouchableOpacity style={styles.forgotPassword}>
-                                        <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
-                                    </TouchableOpacity>
-
-                                    <Button
-                                        title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-                                        onPress={handleLogin}
-                                        loading={loading}
-                                        size="lg"
-                                        style={styles.loginButton}
-                                        textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        keyboardShouldPersistTaps="always"
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                        keyboardDismissMode="none"
+                    >
+                        <View style={styles.content}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <View style={styles.logoContainer}>
+                                    <Image
+                                        source={require('../../assets/images/pasiflow-logo.png')}
+                                        style={styles.logo}
                                     />
                                 </View>
+                                <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+                            </View>
 
-                                {/* Footer */}
-                                <View style={styles.footer}>
-                                    <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
-                                    <Link href="/(auth)/register" asChild>
-                                        <TouchableOpacity>
-                                            <Text style={styles.registerLink}>Hesap Oluşturun</Text>
-                                        </TouchableOpacity>
-                                    </Link>
+                            {/* Login Card */}
+                            <View style={styles.cardContainer}>
+                                {error ? (
+                                    <View style={styles.errorContainer}>
+                                        <Text style={styles.errorText}>{error}</Text>
+                                    </View>
+                                ) : null}
+
+                                {/* Email Input */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>E-posta Adresi</Text>
+                                    <View style={[
+                                        styles.inputContainer,
+                                        emailFocused && styles.inputContainerFocused
+                                    ]}>
+                                        <Ionicons
+                                            name="mail-outline"
+                                            size={20}
+                                            color={emailFocused ? colors.accent.cyan : colors.text.tertiary}
+                                            style={styles.inputIcon}
+                                        />
+                                        <RNTextInput
+                                            ref={emailRef}
+                                            style={styles.input}
+                                            placeholder="ornek@email.com"
+                                            placeholderTextColor={colors.text.tertiary}
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onFocus={() => setEmailFocused(true)}
+                                            onBlur={() => setEmailFocused(false)}
+                                            returnKeyType="next"
+                                            onSubmitEditing={() => passwordRef.current?.focus()}
+                                            blurOnSubmit={false}
+                                        />
+                                    </View>
                                 </View>
 
-                                {/* Agent Login Link */}
-                                <TouchableOpacity
-                                    onPress={() => router.push('/agent/login')}
-                                    style={styles.agentLoginButton}
-                                >
-                                    <Text style={styles.agentLoginText}>Agent Login</Text>
-                                    <Ionicons name="briefcase-outline" size={16} color={colors.text.tertiary} />
+                                {/* Password Input */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Şifre</Text>
+                                    <View style={[
+                                        styles.inputContainer,
+                                        passwordFocused && styles.inputContainerFocused
+                                    ]}>
+                                        <Ionicons
+                                            name="lock-closed-outline"
+                                            size={20}
+                                            color={passwordFocused ? colors.accent.cyan : colors.text.tertiary}
+                                            style={styles.inputIcon}
+                                        />
+                                        <RNTextInput
+                                            ref={passwordRef}
+                                            style={styles.input}
+                                            placeholder="••••••••"
+                                            placeholderTextColor={colors.text.tertiary}
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            secureTextEntry={!showPassword}
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onFocus={() => setPasswordFocused(true)}
+                                            onBlur={() => setPasswordFocused(false)}
+                                            returnKeyType="done"
+                                            onSubmitEditing={handleLogin}
+                                        />
+                                        <TouchableOpacity
+                                            onPress={() => setShowPassword(!showPassword)}
+                                            style={styles.eyeButton}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        >
+                                            <Ionicons
+                                                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                                size={20}
+                                                color={colors.text.tertiary}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <TouchableOpacity style={styles.forgotPassword}>
+                                    <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
                                 </TouchableOpacity>
+
+                                <Button
+                                    title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                                    onPress={handleLogin}
+                                    loading={loading}
+                                    size="lg"
+                                    style={styles.loginButton}
+                                    textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
+                                />
                             </View>
-                        </ScrollView>
-                    </TouchableWithoutFeedback>
+
+                            {/* Footer */}
+                            <View style={styles.footer}>
+                                <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
+                                <Link href="/(auth)/register" asChild>
+                                    <TouchableOpacity>
+                                        <Text style={styles.registerLink}>Hesap Oluşturun</Text>
+                                    </TouchableOpacity>
+                                </Link>
+                            </View>
+
+                            {/* Agent Login Link */}
+                            <TouchableOpacity
+                                onPress={() => router.push('/agent/login')}
+                                style={styles.agentLoginButton}
+                            >
+                                <Text style={styles.agentLoginText}>Agent Login</Text>
+                                <Ionicons name="briefcase-outline" size={16} color={colors.text.tertiary} />
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </LinearGradient>

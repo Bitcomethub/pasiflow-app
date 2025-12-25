@@ -6,11 +6,9 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableOpacity,
-    Image,
     ScrollView,
     TextInput as RNTextInput,
-    Keyboard,
-    TouchableWithoutFeedback
+    Keyboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -90,133 +88,132 @@ export default function AgentLoginScreen() {
                     style={styles.keyboardView}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
-                    <TouchableWithoutFeedback onPress={dismissKeyboard}>
-                        <ScrollView
-                            contentContainerStyle={styles.scrollContent}
-                            keyboardShouldPersistTaps="handled"
-                            showsVerticalScrollIndicator={false}
-                            bounces={false}
-                        >
-                            <View style={styles.content}>
-                                {/* Back Button */}
-                                <TouchableOpacity
-                                    onPress={() => router.back()}
-                                    style={styles.backButton}
-                                >
-                                    <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
-                                </TouchableOpacity>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        keyboardShouldPersistTaps="always"
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                        keyboardDismissMode="none"
+                    >
+                        <View style={styles.content}>
+                            {/* Back Button */}
+                            <TouchableOpacity
+                                onPress={() => router.back()}
+                                style={styles.backButton}
+                            >
+                                <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
+                            </TouchableOpacity>
 
-                                {/* Header */}
-                                <View style={styles.header}>
-                                    <View style={styles.iconContainer}>
-                                        <Ionicons name="briefcase" size={40} color={colors.accent.purple} />
-                                    </View>
-                                    <Text style={styles.title}>Agent Portal</Text>
-                                    <Text style={styles.subtitle}>Sign in to manage your clients</Text>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <View style={styles.iconContainer}>
+                                    <Ionicons name="briefcase" size={40} color={colors.accent.purple} />
                                 </View>
-
-                                {/* Login Card */}
-                                <View style={styles.cardContainer}>
-                                    {error ? (
-                                        <View style={styles.errorContainer}>
-                                            <Text style={styles.errorText}>{error}</Text>
-                                        </View>
-                                    ) : null}
-
-                                    {/* Email Input */}
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Email Address</Text>
-                                        <View style={[
-                                            styles.inputContainer,
-                                            emailFocused && styles.inputContainerFocused
-                                        ]}>
-                                            <Ionicons
-                                                name="mail-outline"
-                                                size={20}
-                                                color={emailFocused ? colors.accent.purple : colors.text.tertiary}
-                                                style={styles.inputIcon}
-                                            />
-                                            <RNTextInput
-                                                ref={emailRef}
-                                                style={styles.input}
-                                                placeholder="agent@pasiflow.com"
-                                                placeholderTextColor={colors.text.tertiary}
-                                                value={email}
-                                                onChangeText={setEmail}
-                                                keyboardType="email-address"
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                                onFocus={() => setEmailFocused(true)}
-                                                onBlur={() => setEmailFocused(false)}
-                                                returnKeyType="next"
-                                                onSubmitEditing={() => passwordRef.current?.focus()}
-                                                blurOnSubmit={false}
-                                            />
-                                        </View>
-                                    </View>
-
-                                    {/* Password Input */}
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Password</Text>
-                                        <View style={[
-                                            styles.inputContainer,
-                                            passwordFocused && styles.inputContainerFocused
-                                        ]}>
-                                            <Ionicons
-                                                name="lock-closed-outline"
-                                                size={20}
-                                                color={passwordFocused ? colors.accent.purple : colors.text.tertiary}
-                                                style={styles.inputIcon}
-                                            />
-                                            <RNTextInput
-                                                ref={passwordRef}
-                                                style={styles.input}
-                                                placeholder="••••••••"
-                                                placeholderTextColor={colors.text.tertiary}
-                                                value={password}
-                                                onChangeText={setPassword}
-                                                secureTextEntry={!showPassword}
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                                onFocus={() => setPasswordFocused(true)}
-                                                onBlur={() => setPasswordFocused(false)}
-                                                returnKeyType="done"
-                                                onSubmitEditing={handleAgentLogin}
-                                            />
-                                            <TouchableOpacity
-                                                onPress={() => setShowPassword(!showPassword)}
-                                                style={styles.eyeButton}
-                                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                            >
-                                                <Ionicons
-                                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                                                    size={20}
-                                                    color={colors.text.tertiary}
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-
-                                    <Button
-                                        title={loading ? 'Signing In...' : 'Sign In'}
-                                        onPress={handleAgentLogin}
-                                        loading={loading}
-                                        size="lg"
-                                        style={styles.loginButton}
-                                        textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
-                                    />
-                                </View>
-
-                                {/* Info */}
-                                <View style={styles.infoContainer}>
-                                    <Ionicons name="information-circle-outline" size={16} color={colors.text.tertiary} />
-                                    <Text style={styles.infoText}>
-                                        Contact support if you need agent credentials
-                                    </Text>
-                                </View>
+                                <Text style={styles.title}>Agent Portal</Text>
+                                <Text style={styles.subtitle}>Sign in to manage your clients</Text>
                             </View>
-                        </ScrollView>
-                    </TouchableWithoutFeedback>
+
+                            {/* Login Card */}
+                            <View style={styles.cardContainer}>
+                                {error ? (
+                                    <View style={styles.errorContainer}>
+                                        <Text style={styles.errorText}>{error}</Text>
+                                    </View>
+                                ) : null}
+
+                                {/* Email Input */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Email Address</Text>
+                                    <View style={[
+                                        styles.inputContainer,
+                                        emailFocused && styles.inputContainerFocused
+                                    ]}>
+                                        <Ionicons
+                                            name="mail-outline"
+                                            size={20}
+                                            color={emailFocused ? colors.accent.purple : colors.text.tertiary}
+                                            style={styles.inputIcon}
+                                        />
+                                        <RNTextInput
+                                            ref={emailRef}
+                                            style={styles.input}
+                                            placeholder="agent@pasiflow.com"
+                                            placeholderTextColor={colors.text.tertiary}
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onFocus={() => setEmailFocused(true)}
+                                            onBlur={() => setEmailFocused(false)}
+                                            returnKeyType="next"
+                                            onSubmitEditing={() => passwordRef.current?.focus()}
+                                            blurOnSubmit={false}
+                                        />
+                                    </View>
+                                </View>
+
+                                {/* Password Input */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Password</Text>
+                                    <View style={[
+                                        styles.inputContainer,
+                                        passwordFocused && styles.inputContainerFocused
+                                    ]}>
+                                        <Ionicons
+                                            name="lock-closed-outline"
+                                            size={20}
+                                            color={passwordFocused ? colors.accent.purple : colors.text.tertiary}
+                                            style={styles.inputIcon}
+                                        />
+                                        <RNTextInput
+                                            ref={passwordRef}
+                                            style={styles.input}
+                                            placeholder="••••••••"
+                                            placeholderTextColor={colors.text.tertiary}
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            secureTextEntry={!showPassword}
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onFocus={() => setPasswordFocused(true)}
+                                            onBlur={() => setPasswordFocused(false)}
+                                            returnKeyType="done"
+                                            onSubmitEditing={handleAgentLogin}
+                                        />
+                                        <TouchableOpacity
+                                            onPress={() => setShowPassword(!showPassword)}
+                                            style={styles.eyeButton}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        >
+                                            <Ionicons
+                                                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                                size={20}
+                                                color={colors.text.tertiary}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <Button
+                                    title={loading ? 'Signing In...' : 'Sign In'}
+                                    onPress={handleAgentLogin}
+                                    loading={loading}
+                                    size="lg"
+                                    style={styles.loginButton}
+                                    textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
+                                />
+                            </View>
+
+                            {/* Info */}
+                            <View style={styles.infoContainer}>
+                                <Ionicons name="information-circle-outline" size={16} color={colors.text.tertiary} />
+                                <Text style={styles.infoText}>
+                                    Contact support if you need agent credentials
+                                </Text>
+                            </View>
+                        </View>
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </LinearGradient>
