@@ -1,147 +1,178 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Image, Dimensions } from 'react-native';
 import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as SplashScreen from 'expo-splash-screen';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, fontWeight, borderRadius } from '@/lib/theme';
+import { colors, fontSize, fontWeight } from '@/lib/theme';
 
-SplashScreen.preventAutoHideAsync();
+const { width, height } = Dimensions.get('window');
 
-export default function Index() {
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const scaleAnim = useRef(new Animated.Value(0.9)).current;
-    const textAnim = useRef(new Animated.Value(0)).current;
+export default function SplashScreen() {
+    const logoScale = useRef(new Animated.Value(0.3)).current;
+    const logoOpacity = useRef(new Animated.Value(0)).current;
+    const textOpacity = useRef(new Animated.Value(0)).current;
+    const textTranslateY = useRef(new Animated.Value(30)).current;
+    const screenOpacity = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        SplashScreen.hideAsync();
-
+        // Logo animation sequence
         Animated.sequence([
-            // 1. Fade In & Scale Up Logo
+            // 1. Logo fades in and scales up
             Animated.parallel([
-                Animated.timing(fadeAnim, {
+                Animated.timing(logoOpacity, {
                     toValue: 1,
-                    duration: 1000,
+                    duration: 800,
                     useNativeDriver: true,
+                    easing: Easing.out(Easing.exp),
                 }),
-                Animated.spring(scaleAnim, {
+                Animated.spring(logoScale, {
                     toValue: 1,
-                    friction: 8,
+                    friction: 4,
                     tension: 40,
                     useNativeDriver: true,
                 }),
             ]),
-            // 2. Fade In Text
-            Animated.timing(textAnim, {
-                toValue: 1,
-                duration: 800,
+            // 2. Text slides up and fades in
+            Animated.parallel([
+                Animated.timing(textOpacity, {
+                    toValue: 1,
+                    duration: 600,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(textTranslateY, {
+                    toValue: 0,
+                    duration: 600,
+                    useNativeDriver: true,
+                    easing: Easing.out(Easing.back(1.5)),
+                }),
+            ]),
+            // 3. Hold for a moment
+            Animated.delay(800),
+            // 4. Fade out entire screen
+            Animated.timing(screenOpacity, {
+                toValue: 0,
+                duration: 400,
                 useNativeDriver: true,
             }),
-            // 3. Hold
-            Animated.delay(1500),
         ]).start(() => {
+            // Navigate to login after animation
             router.replace('/(auth)/login');
         });
     }, []);
 
     return (
-        <View style={styles.container}>
-            <StatusBar style="light" />
+        <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
             <LinearGradient
-                colors={[colors.background.main, '#0F172A']}
-                style={styles.background}
-            />
-
-            <View style={styles.content}>
-                <Animated.View style={[
-                    styles.logoContainer,
-                    {
-                        opacity: fadeAnim,
-                        transform: [{ scale: scaleAnim }]
-                    }
-                ]}>
-                    <LinearGradient
-                        colors={[colors.accent.gradientStart, colors.accent.gradientEnd]}
-                        style={styles.logoBox}
-                    >
-                        <Ionicons name="checkmark-sharp" size={70} color="white" style={styles.icon} />
-                    </LinearGradient>
-                </Animated.View>
-
-                <Animated.View style={{ opacity: textAnim }}>
-                    <View style={styles.textContainer}>
-                        <Text style={styles.title}>Pasi</Text>
-                        <Text style={styles.titleAccent}>flow</Text>
+                colors={[colors.background.main, '#0F172A', colors.primary[900]]}
+                style={styles.gradient}
+            >
+                {/* Logo */}
+                <Animated.View
+                    style={[
+                        styles.logoContainer,
+                        {
+                            opacity: logoOpacity,
+                            transform: [{ scale: logoScale }],
+                        },
+                    ]}
+                >
+                    <View style={styles.logoWrapper}>
+                        <Image
+                            source={require('../assets/images/pasiflow-logo.png')}
+                            style={styles.logo}
+                        />
                     </View>
-                    <Text style={styles.subtitle}>Geleceğin Yatırımı</Text>
                 </Animated.View>
-            </View>
-        </View>
+
+                {/* Tagline */}
+                <Animated.View
+                    style={[
+                        styles.textContainer,
+                        {
+                            opacity: textOpacity,
+                            transform: [{ translateY: textTranslateY }],
+                        },
+                    ]}
+                >
+                    <Text style={styles.tagline}>Geleceğin Yatırımı</Text>
+                    <View style={styles.underline} />
+                </Animated.View>
+
+                {/* Decorative glow orbs */}
+                <View style={styles.glowOrb1} />
+                <View style={styles.glowOrb2} />
+            </LinearGradient>
+        </Animated.View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: colors.background.main,
     },
-    background: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    },
-    content: {
+    gradient: {
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 32,
     },
     logoContainer: {
-        shadowColor: colors.accent.cyan,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-        elevation: 10,
-    },
-    logoBox: {
-        width: 120,
-        height: 120,
-        borderRadius: borderRadius.xxl,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
     },
-    icon: {
-        transform: [{ rotate: '-5deg' }]
+    logoWrapper: {
+        width: 200,
+        height: 200,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    logo: {
+        width: 200,
+        height: 200,
+        resizeMode: 'contain',
     },
     textContainer: {
-        flexDirection: 'row',
+        marginTop: 20,
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    title: {
-        fontSize: 42,
+    tagline: {
+        fontSize: fontSize.xxl,
         fontWeight: fontWeight.bold as any,
         color: colors.text.primary,
-        letterSpacing: -1,
-    },
-    titleAccent: {
-        fontSize: 42,
-        fontWeight: fontWeight.bold as any,
-        color: '#F59E0B',
-        letterSpacing: -1,
-    },
-    subtitle: {
-        marginTop: 8,
-        fontSize: fontSize.base,
-        color: colors.text.tertiary,
-        textAlign: 'center',
         letterSpacing: 2,
         textTransform: 'uppercase',
+        textShadowColor: colors.accent.cyan,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 20,
+    },
+    underline: {
+        width: 100,
+        height: 3,
+        backgroundColor: colors.accent.cyan,
+        marginTop: 12,
+        borderRadius: 2,
+        shadowColor: colors.accent.cyan,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 10,
+    },
+    glowOrb1: {
+        position: 'absolute',
+        top: height * 0.15,
+        left: -50,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: colors.accent.cyan,
+        opacity: 0.1,
+    },
+    glowOrb2: {
+        position: 'absolute',
+        bottom: height * 0.2,
+        right: -80,
+        width: 250,
+        height: 250,
+        borderRadius: 125,
+        backgroundColor: colors.accent.purple,
+        opacity: 0.08,
     },
 });

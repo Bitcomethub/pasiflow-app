@@ -73,7 +73,7 @@ export default function LoginScreen() {
                                 <View style={styles.logoContainer}>
                                     <Image
                                         source={require('../../assets/images/pasiflow-logo.png')}
-                                        style={{ width: 320, height: 100, resizeMode: 'contain' }}
+                                        style={{ width: 280, height: 90, resizeMode: 'contain' }}
                                     />
                                 </View>
                                 <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
