@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated, Easing, Image, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Animated, Easing, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Card } from '@/components/ui';
+import { NewsModal } from '@/components/ui/NewsModal';
 import { fetchNews, NewsItem } from '@/lib/api';
 
 // Fallback mock news for when API is unavailable
@@ -51,6 +52,10 @@ export default function Dashboard() {
     const [displayRent, setDisplayRent] = useState(0);
     const [displayROI, setDisplayROI] = useState(0);
     const [displayTrend, setDisplayTrend] = useState(0);
+
+    // News modal state
+    const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     // Target values
     const TARGET_PORTFOLIO = 345000;
@@ -299,9 +304,7 @@ export default function Dashboard() {
                                 <Ionicons name="newspaper" size={20} color={colors.accent.cyan} />
                                 <Text style={styles.sectionTitle}>Piyasa Haberleri</Text>
                             </View>
-                            <TouchableOpacity onPress={() => Linking.openURL('https://www.redfin.com/blog/')}>
-                                <Text style={styles.newsViewAll}>Tümünü Gör</Text>
-                            </TouchableOpacity>
+                            <Text style={styles.newsViewAll}>Güncel</Text>
                         </View>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.newsScroll}>
                             {newsLoading ? (
@@ -316,7 +319,8 @@ export default function Dashboard() {
                                     activeOpacity={0.8}
                                     onPress={() => {
                                         handlePress();
-                                        Linking.openURL(item.link);
+                                        setSelectedNews(item);
+                                        setModalVisible(true);
                                     }}
                                 >
                                     <Image source={{ uri: item.image }} style={styles.newsImage} />
@@ -373,6 +377,16 @@ export default function Dashboard() {
                     </Animated.View>
                 </ScrollView>
             </SafeAreaView>
+
+            {/* News Modal */}
+            <NewsModal
+                visible={modalVisible}
+                news={selectedNews}
+                onClose={() => {
+                    setModalVisible(false);
+                    setSelectedNews(null);
+                }}
+            />
         </LinearGradient>
     );
 }

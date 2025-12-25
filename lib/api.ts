@@ -68,6 +68,7 @@ export interface NewsItem {
     link: string;
     pubDate: string;
     snippet: string;
+    content?: string; // Full article content for in-app reading
     source: string;
     image: string;
 }
