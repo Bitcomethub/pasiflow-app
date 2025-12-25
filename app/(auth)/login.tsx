@@ -1,21 +1,40 @@
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Dimensions, Image, ScrollView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    TextInput as RNTextInput,
+    Keyboard,
+    TouchableWithoutFeedback
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
-import { Button, TextInput } from '@/components/ui';
+import { Button } from '@/components/ui';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [emailFocused, setEmailFocused] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
+
+    const emailRef = useRef<RNTextInput>(null);
+    const passwordRef = useRef<RNTextInput>(null);
 
     const handleLogin = async () => {
-        // Trim whitespace from inputs
+        Keyboard.dismiss();
+
         const trimmedEmail = email.trim().toLowerCase();
         const trimmedPassword = password.trim();
 
@@ -28,7 +47,6 @@ export default function LoginScreen() {
         const DEMO_EMAIL = 'demo@pasiflow.com';
         const DEMO_PASSWORD = 'demo123';
 
-        // Case-insensitive email comparison
         if (trimmedEmail !== DEMO_EMAIL || trimmedPassword !== DEMO_PASSWORD) {
             setError('Geçersiz e-posta veya şifre.\n\nDemo Bilgileri:\n📧 demo@pasiflow.com\n🔑 demo123');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -42,12 +60,15 @@ export default function LoginScreen() {
         setLoading(true);
         setError('');
 
-        // Simulate login delay
         setTimeout(() => {
             setLoading(false);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             router.replace('/(tabs)');
         }, 800);
+    };
+
+    const dismissKeyboard = () => {
+        Keyboard.dismiss();
     };
 
     return (
@@ -58,83 +79,136 @@ export default function LoginScreen() {
             <SafeAreaView style={styles.safeArea}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={{ flex: 1 }}
+                    style={styles.keyboardView}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        keyboardShouldPersistTaps="handled"
-                        keyboardDismissMode="interactive"
-                        showsVerticalScrollIndicator={false}
-                    >
-                        <View style={styles.content}>
-                            {/* Header */}
-                            <View style={styles.header}>
-                                <View style={styles.logoContainer}>
-                                    <Image
-                                        source={require('../../assets/images/pasiflow-logo.png')}
-                                        style={{ width: 280, height: 90, resizeMode: 'contain' }}
+                    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                            bounces={false}
+                        >
+                            <View style={styles.content}>
+                                {/* Header */}
+                                <View style={styles.header}>
+                                    <View style={styles.logoContainer}>
+                                        <Image
+                                            source={require('../../assets/images/pasiflow-logo.png')}
+                                            style={styles.logo}
+                                        />
+                                    </View>
+                                    <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+                                </View>
+
+                                {/* Login Card */}
+                                <View style={styles.cardContainer}>
+                                    {error ? (
+                                        <View style={styles.errorContainer}>
+                                            <Text style={styles.errorText}>{error}</Text>
+                                        </View>
+                                    ) : null}
+
+                                    {/* Email Input */}
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>E-posta Adresi</Text>
+                                        <View style={[
+                                            styles.inputContainer,
+                                            emailFocused && styles.inputContainerFocused
+                                        ]}>
+                                            <Ionicons
+                                                name="mail-outline"
+                                                size={20}
+                                                color={emailFocused ? colors.accent.cyan : colors.text.tertiary}
+                                                style={styles.inputIcon}
+                                            />
+                                            <RNTextInput
+                                                ref={emailRef}
+                                                style={styles.input}
+                                                placeholder="ornek@email.com"
+                                                placeholderTextColor={colors.text.tertiary}
+                                                value={email}
+                                                onChangeText={setEmail}
+                                                keyboardType="email-address"
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                onFocus={() => setEmailFocused(true)}
+                                                onBlur={() => setEmailFocused(false)}
+                                                returnKeyType="next"
+                                                onSubmitEditing={() => passwordRef.current?.focus()}
+                                                blurOnSubmit={false}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Password Input */}
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Şifre</Text>
+                                        <View style={[
+                                            styles.inputContainer,
+                                            passwordFocused && styles.inputContainerFocused
+                                        ]}>
+                                            <Ionicons
+                                                name="lock-closed-outline"
+                                                size={20}
+                                                color={passwordFocused ? colors.accent.cyan : colors.text.tertiary}
+                                                style={styles.inputIcon}
+                                            />
+                                            <RNTextInput
+                                                ref={passwordRef}
+                                                style={styles.input}
+                                                placeholder="••••••••"
+                                                placeholderTextColor={colors.text.tertiary}
+                                                value={password}
+                                                onChangeText={setPassword}
+                                                secureTextEntry={!showPassword}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                onFocus={() => setPasswordFocused(true)}
+                                                onBlur={() => setPasswordFocused(false)}
+                                                returnKeyType="done"
+                                                onSubmitEditing={handleLogin}
+                                            />
+                                            <TouchableOpacity
+                                                onPress={() => setShowPassword(!showPassword)}
+                                                style={styles.eyeButton}
+                                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                            >
+                                                <Ionicons
+                                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                                    size={20}
+                                                    color={colors.text.tertiary}
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+                                    <TouchableOpacity style={styles.forgotPassword}>
+                                        <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
+                                    </TouchableOpacity>
+
+                                    <Button
+                                        title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                                        onPress={handleLogin}
+                                        loading={loading}
+                                        size="lg"
+                                        style={styles.loginButton}
+                                        textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
                                     />
                                 </View>
-                                <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+
+                                {/* Footer */}
+                                <View style={styles.footer}>
+                                    <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
+                                    <Link href="/(auth)/register" asChild>
+                                        <TouchableOpacity>
+                                            <Text style={styles.registerLink}>Hesap Oluşturun</Text>
+                                        </TouchableOpacity>
+                                    </Link>
+                                </View>
                             </View>
-
-                            {/* Login Card */}
-                            <LinearGradient
-                                colors={[colors.background.card, 'rgba(19, 19, 43, 0.8)']}
-                                style={styles.cardContainer}
-                            >
-                                {error ? (
-                                    <View style={styles.errorContainer}>
-                                        <Text style={styles.errorText}>{error}</Text>
-                                    </View>
-                                ) : null}
-
-                                <TextInput
-                                    label="E-posta Adresi"
-                                    placeholder="ornek@email.com"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    icon="mail-outline"
-                                    placeholderTextColor={colors.text.tertiary}
-                                />
-
-                                <TextInput
-                                    label="Şifre"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                    icon="lock-closed-outline"
-                                    placeholderTextColor={colors.text.tertiary}
-                                />
-
-                                <TouchableOpacity style={styles.forgotPassword}>
-                                    <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
-                                </TouchableOpacity>
-
-                                <Button
-                                    title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-                                    onPress={handleLogin}
-                                    loading={loading}
-                                    size="lg"
-                                    style={styles.loginButton}
-                                    textStyle={{ color: colors.text.primary, fontWeight: 'bold' }}
-                                />
-                            </LinearGradient>
-
-                            {/* Footer - Social Proof / Register */}
-                            <View style={styles.footer}>
-                                <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
-                                <Link href="/(auth)/register" asChild>
-                                    <TouchableOpacity>
-                                        <Text style={styles.registerLink}>Hesap Oluşturun</Text>
-                                    </TouchableOpacity>
-                                </Link>
-                            </View>
-                        </View>
-                    </ScrollView>
+                        </ScrollView>
+                    </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </LinearGradient>
@@ -148,37 +222,31 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
     },
+    keyboardView: {
+        flex: 1,
+    },
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
         paddingVertical: 40,
     },
-    keyboardView: {
-        flex: 1,
-        justifyContent: 'center',
-    },
     content: {
-        paddingHorizontal: spacing.xxl,
+        paddingHorizontal: spacing.xl,
         width: '100%',
         maxWidth: 500,
         alignSelf: 'center',
     },
     header: {
         alignItems: 'center',
-        marginBottom: spacing.giant,
+        marginBottom: spacing.xl,
     },
     logoContainer: {
-        flexDirection: 'row',
         marginBottom: spacing.md,
     },
-    logoText: {
-        fontSize: fontSize.display,
-        fontWeight: fontWeight.bold as any,
-        color: colors.text.primary,
-        letterSpacing: -1,
-        textShadowColor: colors.accent.cyan,
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 15, // Neon glow effect
+    logo: {
+        width: 260,
+        height: 85,
+        resizeMode: 'contain',
     },
     subtitle: {
         fontSize: fontSize.lg,
@@ -186,6 +254,7 @@ const styles = StyleSheet.create({
         fontWeight: fontWeight.medium as any,
     },
     cardContainer: {
+        backgroundColor: colors.background.card,
         borderRadius: borderRadius.xxl,
         padding: spacing.xl,
         borderWidth: 1,
@@ -205,9 +274,44 @@ const styles = StyleSheet.create({
         fontSize: fontSize.sm,
         fontWeight: fontWeight.medium as any,
     },
+    inputGroup: {
+        marginBottom: spacing.lg,
+    },
+    inputLabel: {
+        color: colors.text.primary,
+        fontSize: fontSize.sm,
+        fontWeight: fontWeight.semibold as any,
+        marginBottom: spacing.sm,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.background.subtle,
+        borderRadius: borderRadius.lg,
+        borderWidth: 1.5,
+        borderColor: 'transparent',
+        paddingHorizontal: spacing.md,
+        height: 52,
+    },
+    inputContainerFocused: {
+        backgroundColor: colors.background.card,
+        borderColor: colors.accent.cyan,
+        ...shadows.glow,
+    },
+    inputIcon: {
+        marginRight: spacing.sm,
+    },
+    input: {
+        flex: 1,
+        color: colors.text.primary,
+        fontSize: fontSize.base,
+        paddingVertical: 0,
+    },
+    eyeButton: {
+        padding: spacing.xs,
+    },
     forgotPassword: {
         alignSelf: 'flex-end',
-        marginTop: -spacing.sm,
         marginBottom: spacing.xl,
     },
     forgotPasswordText: {
@@ -216,12 +320,11 @@ const styles = StyleSheet.create({
         fontWeight: fontWeight.semibold as any,
     },
     loginButton: {
-        marginTop: spacing.sm,
         backgroundColor: colors.accent.gradientStart,
         ...shadows.glow,
     },
     footer: {
-        marginTop: spacing.giant,
+        marginTop: spacing.xl,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
