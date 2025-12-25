@@ -13,14 +13,20 @@ import {
     TouchableWithoutFeedback
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
 import { Button } from '@/components/ui';
 
-export default function LoginScreen() {
+// Test Agent Credentials (hardcoded for demo)
+const TEST_AGENTS = [
+    { email: 'agent@pasiflow.com', password: 'agent123', name: 'John Smith' },
+    { email: 'broker@pasiflow.com', password: 'broker123', name: 'Sarah Johnson' }
+];
+
+export default function AgentLoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -32,23 +38,25 @@ export default function LoginScreen() {
     const emailRef = useRef<RNTextInput>(null);
     const passwordRef = useRef<RNTextInput>(null);
 
-    const handleLogin = async () => {
+    const handleAgentLogin = async () => {
         Keyboard.dismiss();
 
         const trimmedEmail = email.trim().toLowerCase();
         const trimmedPassword = password.trim();
 
         if (!trimmedEmail || !trimmedPassword) {
-            setError('Lütfen tüm alanları doldurun');
+            setError('Please fill in all fields');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
 
-        const DEMO_EMAIL = 'demo@pasiflow.com';
-        const DEMO_PASSWORD = 'demo123';
+        // Check against test agents
+        const agent = TEST_AGENTS.find(
+            a => a.email === trimmedEmail && a.password === trimmedPassword
+        );
 
-        if (trimmedEmail !== DEMO_EMAIL || trimmedPassword !== DEMO_PASSWORD) {
-            setError('Geçersiz e-posta veya şifre.\n\nDemo Bilgileri:\n📧 demo@pasiflow.com\n🔑 demo123');
+        if (!agent) {
+            setError('Invalid credentials.\n\nTest Account:\n📧 agent@pasiflow.com\n🔑 agent123');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
@@ -63,7 +71,7 @@ export default function LoginScreen() {
         setTimeout(() => {
             setLoading(false);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            router.replace('/(tabs)');
+            router.replace('/agent/dashboard');
         }, 800);
     };
 
@@ -73,7 +81,7 @@ export default function LoginScreen() {
 
     return (
         <LinearGradient
-            colors={[colors.background.main, colors.primary[900]]}
+            colors={['#1a1a2e', '#16213e']}
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>
@@ -90,15 +98,21 @@ export default function LoginScreen() {
                             bounces={false}
                         >
                             <View style={styles.content}>
+                                {/* Back Button */}
+                                <TouchableOpacity
+                                    onPress={() => router.back()}
+                                    style={styles.backButton}
+                                >
+                                    <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
+                                </TouchableOpacity>
+
                                 {/* Header */}
                                 <View style={styles.header}>
-                                    <View style={styles.logoContainer}>
-                                        <Image
-                                            source={require('../../assets/images/pasiflow-logo.png')}
-                                            style={styles.logo}
-                                        />
+                                    <View style={styles.iconContainer}>
+                                        <Ionicons name="briefcase" size={40} color={colors.accent.purple} />
                                     </View>
-                                    <Text style={styles.subtitle}>Portföyünüze Hoş Geldiniz</Text>
+                                    <Text style={styles.title}>Agent Portal</Text>
+                                    <Text style={styles.subtitle}>Sign in to manage your clients</Text>
                                 </View>
 
                                 {/* Login Card */}
@@ -111,7 +125,7 @@ export default function LoginScreen() {
 
                                     {/* Email Input */}
                                     <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>E-posta Adresi</Text>
+                                        <Text style={styles.inputLabel}>Email Address</Text>
                                         <View style={[
                                             styles.inputContainer,
                                             emailFocused && styles.inputContainerFocused
@@ -119,13 +133,13 @@ export default function LoginScreen() {
                                             <Ionicons
                                                 name="mail-outline"
                                                 size={20}
-                                                color={emailFocused ? colors.accent.cyan : colors.text.tertiary}
+                                                color={emailFocused ? colors.accent.purple : colors.text.tertiary}
                                                 style={styles.inputIcon}
                                             />
                                             <RNTextInput
                                                 ref={emailRef}
                                                 style={styles.input}
-                                                placeholder="ornek@email.com"
+                                                placeholder="agent@pasiflow.com"
                                                 placeholderTextColor={colors.text.tertiary}
                                                 value={email}
                                                 onChangeText={setEmail}
@@ -143,7 +157,7 @@ export default function LoginScreen() {
 
                                     {/* Password Input */}
                                     <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Şifre</Text>
+                                        <Text style={styles.inputLabel}>Password</Text>
                                         <View style={[
                                             styles.inputContainer,
                                             passwordFocused && styles.inputContainerFocused
@@ -151,7 +165,7 @@ export default function LoginScreen() {
                                             <Ionicons
                                                 name="lock-closed-outline"
                                                 size={20}
-                                                color={passwordFocused ? colors.accent.cyan : colors.text.tertiary}
+                                                color={passwordFocused ? colors.accent.purple : colors.text.tertiary}
                                                 style={styles.inputIcon}
                                             />
                                             <RNTextInput
@@ -167,7 +181,7 @@ export default function LoginScreen() {
                                                 onFocus={() => setPasswordFocused(true)}
                                                 onBlur={() => setPasswordFocused(false)}
                                                 returnKeyType="done"
-                                                onSubmitEditing={handleLogin}
+                                                onSubmitEditing={handleAgentLogin}
                                             />
                                             <TouchableOpacity
                                                 onPress={() => setShowPassword(!showPassword)}
@@ -183,13 +197,9 @@ export default function LoginScreen() {
                                         </View>
                                     </View>
 
-                                    <TouchableOpacity style={styles.forgotPassword}>
-                                        <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
-                                    </TouchableOpacity>
-
                                     <Button
-                                        title={loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-                                        onPress={handleLogin}
+                                        title={loading ? 'Signing In...' : 'Sign In'}
+                                        onPress={handleAgentLogin}
                                         loading={loading}
                                         size="lg"
                                         style={styles.loginButton}
@@ -197,24 +207,13 @@ export default function LoginScreen() {
                                     />
                                 </View>
 
-                                {/* Footer */}
-                                <View style={styles.footer}>
-                                    <Text style={styles.footerText}>Henüz üye değil misiniz?</Text>
-                                    <Link href="/(auth)/register" asChild>
-                                        <TouchableOpacity>
-                                            <Text style={styles.registerLink}>Hesap Oluşturun</Text>
-                                        </TouchableOpacity>
-                                    </Link>
+                                {/* Info */}
+                                <View style={styles.infoContainer}>
+                                    <Ionicons name="information-circle-outline" size={16} color={colors.text.tertiary} />
+                                    <Text style={styles.infoText}>
+                                        Contact support if you need agent credentials
+                                    </Text>
                                 </View>
-
-                                {/* Agent Login Link */}
-                                <TouchableOpacity
-                                    onPress={() => router.push('/agent/login')}
-                                    style={styles.agentLoginButton}
-                                >
-                                    <Text style={styles.agentLoginText}>Agent Login</Text>
-                                    <Ionicons name="briefcase-outline" size={16} color={colors.text.tertiary} />
-                                </TouchableOpacity>
                             </View>
                         </ScrollView>
                     </TouchableWithoutFeedback>
@@ -245,29 +244,43 @@ const styles = StyleSheet.create({
         maxWidth: 500,
         alignSelf: 'center',
     },
+    backButton: {
+        position: 'absolute',
+        top: -20,
+        left: spacing.xl,
+        zIndex: 10,
+    },
     header: {
         alignItems: 'center',
         marginBottom: spacing.xl,
     },
-    logoContainer: {
+    iconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(139, 92, 246, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: spacing.md,
+        borderWidth: 2,
+        borderColor: 'rgba(139, 92, 246, 0.3)',
     },
-    logo: {
-        width: 260,
-        height: 85,
-        resizeMode: 'contain',
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: colors.text.primary,
+        marginBottom: spacing.xs,
     },
     subtitle: {
-        fontSize: fontSize.lg,
+        fontSize: fontSize.base,
         color: colors.text.secondary,
-        fontWeight: fontWeight.medium as any,
     },
     cardContainer: {
         backgroundColor: colors.background.card,
         borderRadius: borderRadius.xxl,
         padding: spacing.xl,
         borderWidth: 1,
-        borderColor: colors.border.highlight,
+        borderColor: 'rgba(139, 92, 246, 0.2)',
         ...shadows.float,
     },
     errorContainer: {
@@ -304,7 +317,7 @@ const styles = StyleSheet.create({
     },
     inputContainerFocused: {
         backgroundColor: colors.background.card,
-        borderColor: colors.accent.cyan,
+        borderColor: colors.accent.purple,
         ...shadows.glow,
     },
     inputIcon: {
@@ -319,46 +332,20 @@ const styles = StyleSheet.create({
     eyeButton: {
         padding: spacing.xs,
     },
-    forgotPassword: {
-        alignSelf: 'flex-end',
-        marginBottom: spacing.xl,
-    },
-    forgotPasswordText: {
-        color: colors.accent.cyan,
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.semibold as any,
-    },
     loginButton: {
-        backgroundColor: colors.accent.gradientStart,
+        backgroundColor: colors.accent.purple,
+        marginTop: spacing.md,
         ...shadows.glow,
     },
-    footer: {
-        marginTop: spacing.xl,
+    infoContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'center',
-        alignItems: 'center',
-        gap: spacing.xs,
-    },
-    footerText: {
-        color: colors.text.secondary,
-        fontSize: fontSize.base,
-    },
-    registerLink: {
-        color: colors.accent.cyan,
-        fontSize: fontSize.base,
-        fontWeight: fontWeight.bold as any,
-    },
-    agentLoginButton: {
         marginTop: spacing.xl,
-        alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: spacing.sm,
         gap: spacing.xs,
-        opacity: 0.7,
     },
-    agentLoginText: {
+    infoText: {
         color: colors.text.tertiary,
         fontSize: fontSize.sm,
-    }
+    },
 });
