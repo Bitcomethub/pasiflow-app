@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/lib/theme';
-import { Card, PortfolioComparison } from '@/components/ui';
+import { Card } from '@/components/ui';
 import { NewsModal } from '@/components/ui/NewsModal';
 import { fetchNews, NewsItem } from '@/lib/api';
 
@@ -285,12 +285,6 @@ export default function Dashboard() {
                             {/* Decorative Glow Orb */}
                             <View style={styles.glowOrb} />
                         </LinearGradient>
-                    </Animated.View>
-
-                    {/* Portfolio Comparison Chart */}
-                    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: Animated.add(slideAnim, 30) }] }}>
-                        {/* @ts-ignore */}
-                        <PortfolioComparison roi={displayROI} />
                     </Animated.View>
 
                     {/* Quick Actions */}
