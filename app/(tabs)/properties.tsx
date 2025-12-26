@@ -7,76 +7,87 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows, propertyStatus } from '@/lib/theme';
 import { Card, Badge, StatBlock } from '@/components/ui';
 
-// Mock Data
-// Mock Data with Real Cities
-// Mock Data with Real Cities
+// Mock Data - User's Current Properties (Updated from Pasiflow Info)
 const PROPERTIES = [
     {
         id: '1',
-        title: 'Solid Brick Colonial',
+        title: 'Section 8 Colonial - Cleveland',
         location: 'Cleveland Heights, OH',
         status: 'occupied',
-        purchasePrice: '$115,000',
-        monthlyRent: '$1,250',
-        // Classic brick house, solid investment feel
+        purchasePrice: '$98,000',
+        monthlyRent: '$1,150',
         image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=80',
         nextPaymentDate: '15 gün kaldı',
+        section8: true,
+        occupancyRate: 100,
     },
     {
         id: '2',
-        title: 'Historic Detroit Single Family',
+        title: 'Turnkey Single Family - Detroit',
         location: 'Detroit, MI',
         status: 'occupied',
         purchasePrice: '$85,000',
-        monthlyRent: '$1,100',
-        // Detroit style older home, porch, character - FIXED URL
+        monthlyRent: '$950',
         image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&auto=format&fit=crop&q=80',
         nextPaymentDate: '2 gün kaldı',
+        section8: true,
+        occupancyRate: 100,
     },
     {
         id: '3',
-        title: 'Renovated Craftsman',
+        title: 'Premium Craftsman - Memphis',
         location: 'Memphis, TN',
         status: 'vacancy',
-        purchasePrice: '$135,000',
-        monthlyRent: '$1,400',
-        // Craftsman style, sturdy
+        purchasePrice: '$125,000',
+        monthlyRent: '$1,350',
         image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80',
         nextPaymentDate: '-',
+        section8: true,
+        occupancyRate: 0,
     },
 ];
 
-// Hot Investment Opportunities (Mock Data)
+// Hot Investment Opportunities (Updated from Pasiflow Official Info)
 const HOT_OPPORTUNITIES = [
     {
         id: 'hot-1',
-        title: '🔥 Detroit Investment Hub',
+        title: '🏠 Section 8 Ready - Detroit',
         location: 'Detroit, MI',
-        price: '$55,000',
-        roi: '%16.5',
-        // Raw, potential, brick structure
+        price: '$85,000',
+        roi: '%11.5',
         image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80',
-        tag: 'Yüksek Potansiyel',
+        tag: 'Section 8 Onaylı',
+        section8: true,
     },
     {
         id: 'hot-2',
-        title: '💰 Turnkey 2-Unit',
-        location: 'St. Louis, MO',
-        price: '$89,000',
-        roi: '%13.8',
-        // Multi-unit brick building
+        title: '💰 Turnkey Duplex - Cleveland',
+        location: 'Cleveland, OH',
+        price: '$95,000',
+        roi: '%12.2',
         image: 'https://images.unsplash.com/photo-1574958269340-fa927503f3dd?w=800&auto=format&fit=crop&q=80',
-        tag: 'Nakit Akışı Kralı',
+        tag: 'Devlet Garantili Kira',
+        section8: true,
     },
     {
         id: 'hot-3',
-        title: '⭐ Indianapolis Gem',
+        title: '⭐ Premium Single Family',
         location: 'Indianapolis, IN',
         price: '$125,000',
-        roi: '%10.5',
-        // Siding/traditional midwest home
+        roi: '%10.8',
         image: 'https://images.unsplash.com/photo-1625602812206-5ec545ca1231?w=800&auto=format&fit=crop&q=80',
-        tag: 'Premium',
+        tag: 'Anahtar Teslim',
+        section8: true,
+    },
+    {
+        id: 'hot-4',
+        title: '🔥 Giriş Seviyesi Fırsat',
+        location: 'Memphis, TN',
+        price: '$72,000',
+        roi: '%13.5',
+        image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
+        tag: 'Düşük Giriş Maliyeti',
+        section8: true,
     },
 ];
 

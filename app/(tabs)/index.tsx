@@ -59,11 +59,11 @@ export default function Dashboard() {
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
-    // Target values
-    const TARGET_PORTFOLIO = 345000;
-    const TARGET_RENT = 2850;
-    const TARGET_ROI = 8.4;
-    const TARGET_TREND = 12.5;
+    // Target values (from Pasiflow official info)
+    const TARGET_PORTFOLIO = 425000;
+    const TARGET_RENT = 3450;
+    const TARGET_ROI = 11.2;  // PDF says 10-12% target
+    const TARGET_TREND = 14.8;
 
 
     // Fetch news only once on mount
